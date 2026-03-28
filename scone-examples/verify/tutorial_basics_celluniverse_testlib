@@ -1,0 +1,59 @@
+// ===================================================================
+// SCONE Basics page — cellUniverse fuel pin (testLib nuclides)
+// Same topology as Basics.tsx: fuel | clad | water rings; clad uses Water
+// composition as testLib stand-in (no Zr in testLib).
+// Verified: export SCONE_ACE=IntegrationTestFiles/testLib
+// ===================================================================
+type eigenPhysicsPackage;
+pop      10000;
+active   50;
+inactive 20;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+inactiveTally {}
+
+activeTally {
+  fissionRate { type collisionClerk; response (fission); fission { type macroResponse; MT -6; } }
+}
+
+// ===================================================================
+// GEOMETRY
+// ===================================================================
+geometry {
+  type geometryStd;
+  boundary ( 0 0 0 0 0 0 );
+  graph { type shrunk; }
+
+  surfaces {
+    fuelR     { id 1; type zCylinder; radius 0.41; origin (0.0 0.0 0.0); }
+    cladR     { id 2; type zCylinder; radius 0.475; origin (0.0 0.0 0.0); }
+    cellBound { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (0.63 0.63 0.0); }
+  }
+
+  cells {
+    fuel  { type simpleCell; id 10; surfaces (-1); filltype mat; material fuel; }
+    clad  { type simpleCell; id 11; surfaces (-2 1); filltype mat; material clad; }
+    water { type simpleCell; id 12; surfaces (2 -5); filltype mat; material water; }
+  }
+
+  universes {
+    root { id 1; type rootUniverse; border 5; fill u<999>; }
+    pin  { id 999; type cellUniverse; cells (10 11 12); }
+  }
+}
+
+// ===================================================================
+// NUCLEAR DATA (testLib)
+// ===================================================================
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    fuel  { temp 600; composition { 92235.03 4.50e-02; } }
+    clad  { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+  }
+}

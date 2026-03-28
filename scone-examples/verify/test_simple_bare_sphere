@@ -1,0 +1,39 @@
+// Minimal bare U-235 sphere - uses only testLib nuclides (92235.03)
+// SCONE has no native sphere; use zTruncCylinder as cylindrical approximation
+// For true sphere, use SCONE Benchmarks/MCNP/Godiva (needs full ACE)
+type eigenPhysicsPackage;
+pop 10000;
+active 50;
+inactive 20;
+XSdata ce;
+dataType ce;
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+inactiveTally {}
+activeTally {
+  fissionRate { type collisionClerk; response (fission); fission { type macroResponse; MT -6; } }
+}
+geometry {
+  type geometryStd;
+  boundary (0 0 0 0 0 0);
+  graph { type shrunk; }
+  surfaces {
+    fuelR { id 1; type zCylinder; radius 5.0; origin (0.0 0.0 0.0); }
+    outerBound { id 2; type zTruncCylinder; radius 5.0; origin (0.0 0.0 0.0); halfwidth 5.0; }
+  }
+  cells {
+    fuel { type simpleCell; id 10; surfaces (-1); filltype mat; material UO2; }
+    void { type simpleCell; id 11; surfaces (-2 1); filltype mat; material Water; }
+  }
+  universes {
+    root { id 1; type rootUniverse; border 2; fill u<100>; }
+    inner { id 100; type cellUniverse; cells (10 11); }
+  }
+}
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    Water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    UO2 { temp 600; composition { 92235.03 4.50e-02; } }
+  }
+}

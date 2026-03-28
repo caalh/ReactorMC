@@ -1,0 +1,75 @@
+// ===================================================================
+// 5×5 PWR-style assembly — IntegrationTestFiles/testLib (ZAID .03)
+// Mirrors ReactorMC Reactor Examples layout; pin fills use UO2 + Water only
+// so guide tube / instrument positions are Water shells (testLib-safe).
+// Verified: export SCONE_ACE=IntegrationTestFiles/testLib from SCONE root.
+// ===================================================================
+type eigenPhysicsPackage;
+pop      10000;
+active   50;
+inactive 20;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+inactiveTally {}
+activeTally {
+  fissionRate {
+    type collisionClerk;
+    response (fission);
+    fission { type macroResponse; MT -6; }
+    map {
+      type multiMap;
+      maps (xax yax);
+      xax { type spaceMap; axis x; grid lin; N 32; min -3.15; max 3.15; }
+      yax { type spaceMap; axis y; grid lin; N 32; min -3.15; max 3.15; }
+    }
+  }
+}
+
+// ===================================================================
+// GEOMETRY
+// ===================================================================
+geometry {
+  type geometryStd;
+  boundary (0 0 0 0 0 0);
+  graph { type shrunk; }
+  surfaces {
+    asmBound { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (3.15 3.15 0.0); }
+  }
+  cells { }
+  universes {
+    root    { id 1; type rootUniverse; border 5; fill u<1424>; }
+    pinFuel { id 31000; type pinUniverse; radii (0.39218 0.40005 0.45720 0.0); fills (UO2 Water Water Water); }
+    pinGT   { id 12000; type pinUniverse; radii (0.56134 0.60198 0.0); fills (Water Water Water); }
+    pinIT   { id 14000; type pinUniverse; radii (0.43688 0.48387 0.56134 0.60198 0.0); fills (Water Water Water Water Water); }
+    lat {
+      id 1424;
+      type latUniverse;
+      origin (0.0 0.0 0.0);
+      pitch (1.26 1.26 0.0);
+      shape (5 5 0);
+      padMat Water;
+      map (
+        31000 31000 31000 31000 31000
+        31000 12000 31000 12000 31000
+        31000 31000 14000 31000 31000
+        31000 12000 31000 12000 31000
+        31000 31000 31000 31000 31000
+      );
+    }
+  }
+}
+
+// ===================================================================
+// NUCLEAR DATA
+// ===================================================================
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    Water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    UO2   { temp 600; composition { 92235.03 4.50e-02; } }
+  }
+}

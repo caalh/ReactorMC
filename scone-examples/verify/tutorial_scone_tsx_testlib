@@ -1,0 +1,34 @@
+// SCONE.tsx sampleInput - equivalent pin cell using pinUniverse (avoids cellUniverse geometry issues)
+type eigenPhysicsPackage;
+pop 10000;
+active 50;
+inactive 20;
+XSdata ce;
+dataType ce;
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+geometry {
+  type geometryStd;
+  boundary (0 0 0 0 0 0);
+  graph { type shrunk; }
+  surfaces {
+    bound { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (0.63 0.63 0.0); }
+  }
+  cells {}
+  universes {
+    root { id 1; type rootUniverse; border 5; fill u<2>; }
+    pin { id 2; type pinUniverse; radii (0.4096 0.4750 0.0); fills (fuel clad water); }
+  }
+}
+inactiveTally {}
+activeTally {
+  fissionRate { type collisionClerk; response (fission); fission { type macroResponse; MT -6; } }
+}
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    fuel { temp 900; composition { 92235.03 4.50e-02; } }
+    clad { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+  }
+}

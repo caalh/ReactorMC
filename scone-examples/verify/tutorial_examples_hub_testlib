@@ -1,0 +1,55 @@
+// ===================================================================
+// Examples hub — one runnable deck combining the four pattern blocks (testLib)
+// Physics + pinUniverse geometry + 2D fission map + nuclearData.
+// Gap/clad materials use Water nuclides as testLib stand-ins.
+// Verified: export SCONE_ACE=IntegrationTestFiles/testLib
+// ===================================================================
+type eigenPhysicsPackage;
+pop      10000;
+active   50;
+inactive 20;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+inactiveTally {}
+
+activeTally {
+  fissionRate {
+    type collisionClerk;
+    response (fission);
+    fission { type macroResponse; MT -6; }
+    map {
+      type multiMap;
+      maps (xax yax);
+      xax { type spaceMap; axis x; grid lin; N 64; min -0.63; max 0.63; }
+      yax { type spaceMap; axis y; grid lin; N 64; min -0.63; max 0.63; }
+    }
+  }
+}
+
+geometry {
+  type geometryStd;
+  boundary (0 0 0 0 0 0);
+  graph { type shrunk; }
+  surfaces {
+    cellBound { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (0.63 0.63 0.0); }
+  }
+  cells { }
+  universes {
+    root { id 1; type rootUniverse; border 5; fill u<31000>; }
+    pin  { id 31000; type pinUniverse; radii (0.39218 0.40005 0.45720 0.0); fills (fuel gap clad water); }
+  }
+}
+
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    fuel  { temp 600; composition { 92235.03 4.50e-02; } }
+    gap   { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    clad  { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+  }
+}

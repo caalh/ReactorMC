@@ -1,0 +1,54 @@
+// ===================================================================
+// End-to-end deck shape — testLib pin cell (Config.tsx companion)
+// Full RPV/core hierarchy with real materials needs a full ACE library.
+// ===================================================================
+type eigenPhysicsPackage;
+pop      10000;
+active   50;
+inactive 20;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+inactiveTally {}
+
+activeTally {
+  fissionRate {
+    type collisionClerk;
+    response (fission);
+    fission { type macroResponse; MT -6; }
+  }
+}
+
+// ===================================================================
+// GEOMETRY
+// ===================================================================
+geometry {
+  type geometryStd;
+  boundary ( 0 0 0 0 0 0 );
+  graph { type shrunk; }
+
+  surfaces {
+    boxSq { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (0.63 0.63 0.0); }
+  }
+
+  cells { }
+
+  universes {
+    root  { id 1; type rootUniverse; border 5; fill u<31000>; }
+    pin31 { id 31000; type pinUniverse; radii (0.39218 0.40005 0.45720 0.0); fills (UO2 Water Water Water); }
+  }
+}
+
+// ===================================================================
+// NUCLEAR DATA
+// ===================================================================
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    Water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    UO2   { temp 600; composition { 92235.03 4.50e-02; } }
+  }
+}
