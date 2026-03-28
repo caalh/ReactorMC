@@ -1,0 +1,34 @@
+// Minimal fuel pin - uses only testLib nuclides (1001, 8016, 92235)
+// Simplified: fuel + water only (no clad, no He) for testLib compatibility
+type eigenPhysicsPackage;
+pop 10000;
+active 50;
+inactive 20;
+XSdata ce;
+dataType ce;
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+inactiveTally {}
+activeTally {
+  fissionRate { type collisionClerk; response (fission); fission { type macroResponse; MT -6; } }
+}
+geometry {
+  type geometryStd;
+  boundary (0 0 0 0 0 0);
+  graph { type shrunk; }
+  surfaces {
+    boxSq { id 5; type zSquareCylinder; origin (0.0 0.0 0.0); halfwidth (0.63 0.63 0.0); }
+  }
+  cells {}
+  universes {
+    root { id 1; type rootUniverse; border 5; fill u<31000>; }
+    pin31 { id 31000; type pinUniverse; radii (0.41 0.0); fills (UO2 Water); }
+  }
+}
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    Water { temp 600; composition { 1001.03 6.67e-02; 8016.03 3.33e-02; } }
+    UO2 { temp 600; composition { 92235.03 4.50e-02; } }
+  }
+}

@@ -1,0 +1,91 @@
+// ===================================================================
+// Fixed-source slab — source | concrete | detector (production materials)
+// Same listing as ReactorMC ShieldingExamples (slab_shield_production.inp).
+// Geometry matches tutorial_shielding_slab (domainBox id 9 = root border).
+// Use SCONE_ACE pointing at a full library (ZAID .06). Not in run_all.ps1 (testLib fails at ACE load).
+// ===================================================================
+type fixedSourcePhysicsPackage;
+pop      100000;
+cycles   200;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+source {
+  type pointSource;
+  r (2.5 0.0 0.0);
+  particle neutron;
+  E 1.0;
+}
+
+tally {
+  fluxRate {
+    type collisionClerk;
+    response (flux);
+    flux { type fluxResponse; }
+    map {
+      type multiMap;
+      maps (xax);
+      xax { type spaceMap; axis x; grid lin; N 50; min 0.0; max 30.0; }
+    }
+  }
+}
+
+// ===================================================================
+// GEOMETRY
+// ===================================================================
+geometry {
+  type geometryStd;
+  boundary ( 0 0 0 0 0 0 );
+  graph { type shrunk; }
+
+  surfaces {
+    domainBox { id 9; type box; origin (15.0 0.0 0.0); halfwidth (15.0 10.0 10.0); }
+    P1    { id 1; type plane; coeffs (1.0 0.0 0.0 0.0); }
+    P2    { id 2; type plane; coeffs (1.0 0.0 0.0 5.0); }
+    P3    { id 3; type plane; coeffs (1.0 0.0 0.0 15.0); }
+    P4    { id 4; type plane; coeffs (1.0 0.0 0.0 30.0); }
+    boxY  { id 5; type plane; coeffs (0.0 1.0 0.0 -10.0); }
+    boxY2 { id 6; type plane; coeffs (0.0 1.0 0.0 10.0); }
+    boxZ  { id 7; type plane; coeffs (0.0 0.0 1.0 -10.0); }
+    boxZ2 { id 8; type plane; coeffs (0.0 0.0 1.0 10.0); }
+  }
+
+  cells {
+    source   { type simpleCell; id 10; surfaces (1 -2 5 -6 7 -8); filltype mat; material Air; }
+    shield   { type simpleCell; id 11; surfaces (2 -3 5 -6 7 -8); filltype mat; material Concrete; }
+    detector { type simpleCell; id 12; surfaces (3 -4 5 -6 7 -8); filltype mat; material Air; }
+  }
+
+  universes {
+    root  { id 1; type rootUniverse; border 9; fill u<100>; }
+    inner { id 100; type cellUniverse; cells (10 11 12); }
+  }
+}
+
+// ===================================================================
+// NUCLEAR DATA
+// ===================================================================
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    Air {
+      temp 293;
+      composition {
+        7014.06 3.9016E-05;
+        8016.06 1.0409E-05;
+      }
+    }
+    Concrete {
+      temp 293;
+      composition {
+        1001.06  1.3742E-02;
+        8016.06  4.5953E-02;
+        14028.06 1.6619E-02;
+        20040.06 1.5025E-03;
+      }
+    }
+  }
+}

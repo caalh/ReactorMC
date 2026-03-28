@@ -1,0 +1,51 @@
+// ===================================================================
+// boundary (0 0 0 0 0 0) + minimal CSG pin — runnable with testLib
+// Vacuum on all six global faces; cell surface sense is separate (Input Manual).
+// ===================================================================
+type eigenPhysicsPackage;
+pop      100;
+active   5;
+inactive 2;
+XSdata   ce;
+dataType ce;
+
+collisionOperator { neutronCE { type neutronCEstd; } }
+transportOperator { type transportOperatorDT; }
+
+inactiveTally {}
+
+activeTally {
+  fissionRate { type collisionClerk; response (fission); fission { type macroResponse; MT -6; } }
+}
+
+// ===================================================================
+// GEOMETRY
+// ===================================================================
+geometry {
+  type geometryStd;
+  boundary ( 0 0 0 0 0 0 );
+  graph { type shrunk; }
+
+  surfaces {
+    fuelR { id 1; type zCylinder; radius 0.39218; origin (0.0 0.0 0.0); }
+  }
+
+  cells {
+    pinCell { type simpleCell; id 10; surfaces (-1); filltype mat; material UO2; }
+  }
+
+  universes {
+    root { id 1; type rootUniverse; border 1; fill u<2>; }
+    pin  { id 2; type cellUniverse; cells (10); }
+  }
+}
+
+// ===================================================================
+// NUCLEAR DATA
+// ===================================================================
+nuclearData {
+  handles { ce { type aceNeutronDatabase; aceLibrary $SCONE_ACE; } }
+  materials {
+    UO2 { temp 600; composition { 92235.03 4.50e-02; } }
+  }
+}
