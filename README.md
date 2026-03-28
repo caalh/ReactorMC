@@ -1,38 +1,29 @@
-# Staging bundle for [caalh/ReactorMC](https://github.com/caalh/ReactorMC)
+# Upload staging for [caalh/ReactorMC](https://github.com/caalh/ReactorMC)
 
-## Not used by the website
+## Do this (in order)
 
-The ReactorMC **site** reads SCONE verify files only from repo-root **`scone-examples/`** (`?raw` imports in `src/pages/scone/*`). **`openmc-examples/`** at repo root is the canonical runnable mirror for OpenMC tutorials.
+1. **From the website repo root**, run:
+   ```bash
+   npm run sync:upload-bundle
+   ```
+   That refreshes the two folders next to this file: `scone-examples/` and `openmc-examples/`.
 
-Everything under **`ReactorMC-upload-bundle/scone-examples/`** and **`ReactorMC-upload-bundle/openmc-examples/`** is a **disposable copy** for uploading to the org repo. Edit and maintain **only** the repo-root folders.
+2. **Drag both folders** into the **root** of your `ReactorMC` GitHub repo (same level as that repo’s `README.md`).
 
-## Refresh copies
+3. **On the org repo**, update the top-level `README.md` so it links to `scone-examples/verify/README.md` and `openmc-examples/README.md`.
 
-From the website repo root:
+You can delete `scone-examples/` and `openmc-examples/` inside this bundle after upload; run step 1 again whenever you need a fresh copy.
 
-```bash
-npm run sync:upload-bundle
-```
+---
 
-That runs `scripts/sync-reactormc-upload-bundle.mjs` and overwrites the two subfolders here.
+## Why this folder exists
 
-## Upload layout
+The **live site** only reads SCONE inputs from **`scone-examples/` at the repo root** (not from here). This bundle is **just a copy** you sync before uploading to the separate `ReactorMC` repo—edit decks only under repo-root `scone-examples/` and `openmc-examples/`.
 
-Drag these **from inside this bundle** into the root of your **`ReactorMC`** repository:
+## What “verified” means (short)
 
-```text
-ReactorMC/
-  scone-examples/     ← copy from ReactorMC-upload-bundle/scone-examples/
-  openmc-examples/    ← copy from ReactorMC-upload-bundle/openmc-examples/
-```
-
-## After upload
-
-1. Point the org repo **`README.md`** at `scone-examples/verify/README.md` and `openmc-examples/README.md`.
-2. Optionally delete the copied subfolders here and re-run `npm run sync:upload-bundle` only when you need a fresh staging tree.
-
-## What “verified” means
-
-- **`scone-examples/verify/`** — SCONE + `IntegrationTestFiles/testLib`; `run_all.ps1`.
-- **`scone_beavrs_clean.inp`** — full-library deck, not testLib.
-- **`openmc-examples/`** — pin + assembly Python; needs `OPENMC_CROSS_SECTIONS`; not CI.
+| Folder | Meaning |
+|--------|--------|
+| `scone-examples/verify/` | Run with SCONE + `IntegrationTestFiles/testLib`; see `run_all.ps1`. |
+| `scone_beavrs_clean.inp` | Full-library deck, not testLib. |
+| `openmc-examples/` | Pin + assembly Python; needs `OPENMC_CROSS_SECTIONS`; not run in CI. |
