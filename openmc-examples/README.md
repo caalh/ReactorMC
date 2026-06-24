@@ -1,6 +1,6 @@
 # OpenMC example inputs (ReactorMC)
 
-Runnable Python models aligned with the **OpenMC** tutorial pages on [reactormc.net](https://reactormc.net). These are the spiritual counterpart to `scone-examples/verify/`: there is **no** bundled nuclear-data library here—you must install OpenMC and HDF5 cross sections locally.
+Runnable Python models aligned with the **OpenMC** tutorial pages on [reactormc.net](https://reactormc.net). A public mirror of this folder (with SCONE decks) lives at **[github.com/caalh/ReactorMC](https://github.com/caalh/ReactorMC)** under `openmc-examples/`. There is **no** bundled nuclear-data library here—you must install OpenMC and HDF5 cross sections locally.
 
 ## Tested stack
 
@@ -29,6 +29,24 @@ Runnable Python models aligned with the **OpenMC** tutorial pages on [reactormc.
 | `example_pin/` | [/openmc/example-pin/](https://reactormc.net/openmc/example-pin/) |
 | `example_assembly/` | [/openmc/example-assembly/](https://reactormc.net/openmc/example-assembly/) |
 
+## Full-core deck
+
+- `beavrs_fullcore.py` — **BEAVRS Cycle 1 full-core PWR translation (community
+  example deck).** Geometry + material number densities translated from the
+  author-verified Cambridge SCONE BEAVRS deck and the MIT BEAVRS rev 2.0.2 spec.
+  Builds a real 193-assembly loading map (1.6/2.4/3.1 wt% UO2) of 17×17
+  `RectLattice` assemblies (24 guide tubes + central instrument tube), Pyrex
+  burnable-poison rods, control rods withdrawn, core barrel/RPV; vacuum
+  boundaries. Uses `openmc.IndependentSource`, `openmc.Material.set_density`
+  with atom densities, temperature (600 K) set on **cells**, `c_H_in_H2O`
+  S(α,β) on water only. Run `model.run(threads=N)` then
+  `openmc.StatePoint(path)`. **NOT benchmark-validated.** Flagged
+  simplifications: number densities are the verified deck's JEF-3.1.1 600 K
+  values but whatever library `OPENMC_CROSS_SECTIONS` points at is used
+  (cross-library k-eff bias expected); single uniform active-fuel axial zone
+  (no grids/plenum/nozzles); representative 20-rod Pyrex pattern; neutron-shield/
+  baffle plates omitted. Not an official MIT/CRPG product.
+
 ## Run all (optional)
 
 From this directory, after `OPENMC_CROSS_SECTIONS` is set:
@@ -46,7 +64,7 @@ Each example runs in its own working directory so OpenMC XML/HDF5 outputs do not
 
 ## Policy (maintainers)
 
-When you change the “complete model” code on `ExamplePin.tsx` or `ExampleAssembly.tsx`, update the matching `build_model.py` here and re-run locally. See `docs/CROSS_CODE_TUTORIAL_REVIEW.md` and `VERIFICATION_SUMMARY.md`.
+When you change the “complete model” code on `ExamplePin.tsx` or `ExampleAssembly.tsx`, update the matching `build_model.py` here and re-run locally. See `docs/TUTORIAL_STATUS.md` and `VERIFICATION_SUMMARY.md`.
 
 ## Related
 
