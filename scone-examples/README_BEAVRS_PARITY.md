@@ -4,6 +4,7 @@
 |------|------|
 | **`Scone Input`** (repo root) | Author-verified full-core deck as used for successful runs (local `aceLibrary` path, informal comments). |
 | **`scone_beavrs_clean.inp`** | Same model: identical lattice maps, surface IDs, cell/universe IDs, and material **active** compositions. Differences are **only** presentation and portability: section headers, consistent spacing, renamed descriptive labels where SCONE keys off **numeric IDs**, portable `aceLibrary` placeholder, and the second `viz` entry uses the same keyword as the verified file (`bmp` for the y-axis image). |
+| **`beavrs_fullcore.scone`** | Naming-aligned copy of `scone_beavrs_clean.inp` (same verified model) so the SCONE deck matches the `beavrs_fullcore.{i,sss,py}` translations published for MCNP / Serpent / OpenMC. It is the **source of truth** those spec-derived translations were ported from. Header notes the JEF-3.1.1 / 600 K library and the H-1 / S(α,β) water flag. |
 
 **Restored from verified (was missing in an older clean export):** `clad` and `alClad` material blocks at the end of `nuclearData` (present in `Scone Input`; not used by current pin `fills` but kept for parity).
 
