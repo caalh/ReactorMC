@@ -1,0 +1,363 @@
+% BEAVRS Cycle 1 full-core PWR - Serpent 2 translation (community example deck)
+% =====================================================================
+% PROVENANCE: Geometry + materials translated from the author-VERIFIED
+% Cambridge SCONE BEAVRS full-core deck and the public MIT BEAVRS rev
+% 2.0.2 specification (CRPG/MIT, 2018). COMMUNITY EXAMPLE DECK - NOT
+% benchmark-validated; not an official MIT/CRPG product.
+%
+% CONTAINS: 17x17 core lattice (assembly pitch 21.50364 cm), 193 fuel
+% assemblies on the verified BEAVRS loading map; 17x17 assemblies (pin
+% pitch 1.26 cm, fuel 0.39218 / gap 0.40005 / clad 0.45720); enrichment
+% zones 1.6/2.4/3.1 wt% UO2; Pyrex burnable-poison rods; control rods
+% WITHDRAWN (water-filled guide tubes); core barrel / downcomer / RPV.
+%
+% ASSUMPTIONS / SIMPLIFICATIONS (FLAGGED):
+%  * ZAID suffix .06c assumed to mean 600 K (matching the verified SCONE
+%    deck's JEF-3.1.1 .06 cards). Set 'set acelib' to a library whose
+%    600 K suffix matches; energies are in MeV. Number densities are
+%    identical to the verified deck.
+%  * Axial geometry simplified to a single uniform active zone
+%    (0 -> 365.76 cm) + water reflectors; no grids/plenum/nozzles.
+%  * Representative 20-rod Pyrex pattern for all BA assemblies.
+%  * Neutron-shield panels and SS baffle/former plates omitted.
+%  * S(a,b) (therm lwtr) applied to WATER ONLY, never to UO2.
+%  * Run: sss2 -omp N beavrs_fullcore.sss
+% =====================================================================
+
+set title "BEAVRS Cycle 1 full-core PWR (Serpent translation, example deck)"
+
+% ===================== MATERIALS (atoms/b-cm) =====================
+mat fuel16 sum tmp 600   % UO2-16
+8016.06c  4.58970e-2
+8017.06c  1.74360e-5
+92234.06c  3.01310e-6
+92235.06c  3.75030e-4
+92238.06c  2.26250e-2
+mat fuel24 sum tmp 600   % UO2-24
+8016.06c  4.58300e-2
+8017.06c  1.74110e-5
+92234.06c  4.48420e-6
+92235.06c  5.58140e-4
+92238.06c  2.24070e-2
+mat fuel31 sum tmp 600   % UO2-31
+8016.06c  4.58530e-2
+8017.06c  1.74200e-5
+92234.06c  5.79870e-6
+92235.06c  7.21750e-4
+92238.06c  2.22530e-2
+mat helium sum tmp 600   % Helium
+2003.06c  4.80890e-10
+2004.06c  2.40440e-4
+mat zirc sum tmp 600   % Zircaloy
+24050.06c  3.29620e-6
+24052.06c  6.35640e-5
+24053.06c  7.20760e-6
+24054.06c  1.79410e-6
+26054.06c  8.66980e-6
+26056.06c  1.36100e-4
+26057.06c  3.14310e-6
+26058.06c  4.18290e-7
+8016.06c  3.07440e-4
+8017.06c  1.16800e-7
+50112.06c  4.67350e-6
+50114.06c  3.17990e-6
+50115.06c  1.63810e-6
+50116.06c  7.00550e-5
+50117.06c  3.70030e-5
+50118.06c  1.16690e-4
+50119.06c  4.13870e-5
+50120.06c  1.56970e-4
+50122.06c  2.23080e-5
+50124.06c  2.78970e-5
+40090.06c  2.18280e-2
+40091.06c  4.76010e-3
+40092.06c  7.27590e-3
+40094.06c  7.37340e-3
+40096.06c  1.18790e-3
+mat water sum tmp 600 moder lwtr 1001   % Water
+1001.06c  4.94560e-2
+5010.06c  7.97140e-6
+5011.06c  3.22470e-5
+1002.06c  7.70350e-6
+8016.06c  2.46730e-2
+8017.06c  9.37340e-6
+mat pyrex sum tmp 600   % BorosilicateGlass
+13027.06c  1.73520e-3
+5010.06c  9.65060e-4
+5011.06c  3.91890e-3
+8016.06c  4.65140e-2
+8017.06c  1.76710e-5
+14028.06c  1.69260e-2
+14029.06c  8.59440e-4
+14030.06c  5.66540e-4
+mat ss304 sum tmp 600   % StainlessSteel304
+24050.06c  7.67780e-4
+24052.06c  1.48060e-2
+24053.06c  1.67890e-3
+24054.06c  4.17910e-4
+26054.06c  3.46200e-3
+26056.06c  5.43450e-2
+26057.06c  1.25510e-3
+26058.06c  1.67030e-4
+25055.06c  1.76040e-3
+28058.06c  5.60890e-3
+28060.06c  2.16050e-3
+28061.06c  9.39170e-5
+28062.06c  2.99450e-4
+28064.06c  7.62610e-5
+14028.06c  9.52810e-4
+14029.06c  4.83810e-5
+14030.06c  3.18930e-5
+mat carbonsteel sum tmp 600   % CarbonSteel
+13027.06c  4.35230e-5
+5010.06c  2.58330e-6
+5011.06c  1.04500e-5
+6012.06c  1.04420e-3
+20040.06c  1.70430e-5
+20042.06c  1.13750e-7
+20043.06c  2.37340e-8
+20044.06c  3.66730e-7
+20046.06c  7.03220e-10
+20048.06c  3.28750e-8
+24050.06c  1.37380e-5
+24052.06c  2.64930e-4
+24053.06c  3.00410e-5
+24054.06c  7.47780e-6
+29063.06c  1.02230e-4
+29065.06c  4.56080e-5
+26054.06c  4.74370e-3
+26056.06c  7.44650e-2
+26057.06c  1.71970e-3
+26058.06c  2.28860e-4
+25055.06c  6.41260e-4
+42100.06c  2.98140e-5
+42092.06c  4.48220e-5
+42094.06c  2.81100e-5
+42095.06c  4.85670e-5
+42096.06c  5.10150e-5
+42097.06c  2.93190e-5
+42098.06c  7.43270e-5
+41093.06c  5.05590e-6
+28058.06c  4.08620e-4
+28060.06c  1.57400e-4
+28061.06c  6.84200e-6
+28062.06c  2.18150e-5
+28064.06c  5.55570e-6
+15031.06c  3.79130e-5
+16032.06c  3.48080e-5
+16033.06c  2.74200e-7
+16034.06c  1.53680e-6
+16036.06c  5.33980e-9
+14028.06c  6.17020e-4
+14029.06c  3.13300e-5
+14030.06c  2.06530e-5
+22046.06c  1.21440e-6
+22047.06c  1.09520e-6
+22048.06c  1.08510e-5
+22049.06c  7.96340e-7
+22050.06c  7.62490e-7
+23051.06c  4.59890e-5
+mat air sum tmp 600   % Air
+18036.06c  7.87300e-9
+18038.06c  1.48440e-9
+18040.06c  2.35060e-6
+6012.06c  6.75390e-8
+7014.06c  1.96800e-4
+7015.06c  7.23540e-7
+8016.06c  5.28660e-5
+8017.06c  2.00840e-8
+therm lwtr lwj3.11t   % H-in-H2O S(a,b); match to your acelib
+
+% ===================== PIN UNIVERSES =====================
+% fuel pins (pellet / He gap / Zircaloy clad / borated water)
+pin pf16
+fuel16 0.39218
+helium 0.40005
+zirc   0.45720
+water
+
+pin pf24
+fuel24 0.39218
+helium 0.40005
+zirc   0.45720
+water
+
+pin pf31
+fuel31 0.39218
+helium 0.40005
+zirc   0.45720
+water
+
+% guide tube (CR withdrawn -> water-filled)
+pin pgt
+water 0.56134
+zirc  0.60198
+water
+
+% instrument tube (air / Zr / water / Zr / water)
+pin pit
+air   0.43688
+zirc  0.48387
+water 0.56134
+zirc  0.60198
+water
+
+% Pyrex burnable-poison pin (BP above dashpot)
+pin pba
+air    0.21400
+ss304  0.23051
+helium 0.24130
+pyrex  0.42672
+helium 0.43688
+ss304  0.48387
+water  0.56134
+zirc   0.60198
+water
+
+% water "assembly" universe for reflector positions
+pin pw
+water
+
+% ===================== ASSEMBLY LATTICES =====================
+lat a16 1 0.0 0.0 17 17 1.26
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pgt   pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pgt   pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pit   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pgt   pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pgt   pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pgt   pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16  pf16
+
+lat a24 1 0.0 0.0 17 17 1.26
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pgt   pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pgt   pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pit   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pgt   pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pgt   pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pgt   pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+
+lat a24b 1 0.0 0.0 17 17 1.26
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pba   pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pba   pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pgt   pf24  pf24  pba   pf24  pf24  pba   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pba   pf24  pf24  pgt   pf24  pf24  pit   pf24  pf24  pgt   pf24  pf24  pba   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pgt   pf24  pf24  pba   pf24  pf24  pba   pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pba   pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pba   pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pba   pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24  pf24
+
+lat a31 1 0.0 0.0 17 17 1.26
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pgt   pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pgt   pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pit   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pgt   pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pgt   pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pgt   pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+
+lat a31b 1 0.0 0.0 17 17 1.26
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pba   pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pba   pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pgt   pf31  pf31  pba   pf31  pf31  pba   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pba   pf31  pf31  pgt   pf31  pf31  pit   pf31  pf31  pgt   pf31  pf31  pba   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pgt   pf31  pf31  pba   pf31  pf31  pba   pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pba   pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pba   pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pba   pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31  pf31
+
+% ===================== CORE LATTICE =====================
+lat core 1 0.0 0.0 17 17 21.50364
+pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw
+pw    pw    pw    pw    pw    a31   a31b  a31   a31b  a31   a31b  a31   pw    pw    pw    pw    pw
+pw    pw    pw    a31   a31   a31b  a16   a31b  a16   a31b  a16   a31b  a31   a31   pw    pw    pw
+pw    pw    a31   a31b  a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a31b  a31   pw    pw
+pw    pw    a31   a24b  a24   a24b  a16   a24b  a16   a24b  a16   a24b  a24   a24b  a31   pw    pw
+pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
+pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
+pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
+pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
+pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
+pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
+pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
+pw    pw    a31   a24b  a24   a24b  a16   a24b  a16   a24b  a16   a24b  a24   a24b  a31   pw    pw
+pw    pw    a31   a31b  a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a31b  a31   pw    pw
+pw    pw    pw    a31   a31   a31b  a16   a31b  a16   a31b  a16   a31b  a31   a31   pw    pw    pw
+pw    pw    pw    pw    pw    a31   a31b  a31   a31b  a31   a31b  a31   pw    pw    pw    pw    pw
+pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw
+
+% ===================== GEOMETRY CELLS =====================
+surf sCB1  cyl 0.0 0.0 187.96     % core barrel inner
+surf sCB2  cyl 0.0 0.0 193.675    % core barrel outer
+surf sLin  cyl 0.0 0.0 219.150    % RPV liner inner
+surf sRPVi cyl 0.0 0.0 219.710    % RPV inner
+surf sRPVo cyl 0.0 0.0 241.3      % RPV outer
+surf zb    pz 0.0                 % active fuel bottom
+surf zt    pz 365.76              % active fuel top
+surf zrb   pz -30.0               % reflector bottom
+surf zrt   pz 395.76              % reflector top
+
+cell cCore   0 fill core    -sCB1 zb -zt
+cell cRefB   0 water        -sCB1 zrb -zb
+cell cRefT   0 water        -sCB1 zt -zrt
+cell cBarrel 0 ss304         sCB1 -sCB2 zrb -zrt
+cell cDown   0 water         sCB2 -sLin zrb -zrt
+cell cLiner  0 ss304         sLin -sRPVi zrb -zrt
+cell cRPV    0 carbonsteel   sRPVi -sRPVo zrb -zrt
+cell cOut    0 outside       sRPVo
+cell cOutB   0 outside      -sRPVo -zrb
+cell cOutT   0 outside      -sRPVo zrt
+
+% ===================== RUN SETTINGS =====================
+set pop 20000 250 50      % neutrons/cycle, active, inactive
+set bc 1                  % vacuum (black) outer boundary
+% set acelib "/path/to/jeff311.xsdir"   % <- set your library (600 K suffix)
+set ures 1
