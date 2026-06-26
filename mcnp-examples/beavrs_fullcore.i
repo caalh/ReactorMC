@@ -18,26 +18,49 @@ c    fully WITHDRAWN (guide tubes water-filled), matching the SCONE deck.
 c  - Radial: core barrel (SS304) / downcomer water / RPV liner / RPV
 c    (carbon steel); vacuum outside.
 c
+c FULL AXIAL MODEL (this is the completed axial build; the old single-zone
+c  caveat is REMOVED). Every pin is an axial STACK: a column universe whose
+c  cells are bounded by pz planes and filled with the matching 2D radial pin
+c  universe, ported layer-for-layer from the verified SCONE deck, z 0->460:
+c   * active fuel z 36.748 -> 402.508 cm (height 365.76), continuous UO2,
+c     segmented by 7 Inconel grid spacers + 1 plenum-region spacer (pz
+c     planes 700-730 below);
+c   * bottom: water (0->20), lower core/support plate SS (20->35, m11),
+c     Zircaloy bottom end plug (35->36.748);
+c   * top: upper fuel-rod plenum w/ Inconel spring (402.508->417.164, with
+c     a grid band), Zr top end plug (417.164->419.704), water
+c     (419.704->423.049), SS304 top nozzle (423.049->431.876), water top;
+c   * guide tubes: narrowed dashpot thimble (cz 0.50419/0.54610) below
+c     z~98, normal thimble above, borated-water support plate (m12), all 8
+c     spacer bands; instrument tube: bare thimble below the plate, full
+c     thimble above; Pyrex BA rods: SS/dashpot transition + plenum geometry
+c     above the poison column (Pyrex active z 40.558 -> 401.238).
+c   Inconel (m10) grid spacers = the verified deck's square Inconel sleeve
+c   in the coolant (px/py half-widths 0.61015 -> 0.62992 cm) at the 8 BEAVRS
+c   spacer elevations.
+c
 c ASSUMPTIONS / SIMPLIFICATIONS (FLAGGED):
 c  * Library: ZAID suffix .80c (ENDF/B-VII.1, 293.6 K) assumed for
 c    availability. The VERIFIED SCONE deck used JEF-3.1.1 at 600 K.
 c    Material NUMBER DENSITIES are identical to the verified deck;
 c    only the data library/temperature differ -> expect a cross-library
 c    k-eff bias. For 600 K work use a hot library (e.g. .81c/.82c) or
-c    tmp/mt cards. lwtr.20t S(a,b) is on WATER ONLY (never on UO2).
-c  * Axial geometry SIMPLIFIED: a single uniform active-fuel zone
-c    (0 -> 365.76 cm) with ~30 cm water reflectors top/bottom. The
-c    verified deck's ~25 axial layers (grid spacers, plenum, nozzles,
-c    dashpot, end plugs) are NOT reproduced here.
+c    tmp/mt cards. lwtr.20t S(a,b) is on WATER ONLY (never on UO2/steel).
 c  * Burnable-poison spatial layout is a REPRESENTATIVE 20-rod Pyrex
-c    pattern applied uniformly to all BA assemblies (the verified deck's
-c    6/12/15/16/20-rod directional variants are collapsed).
+c    pattern applied to all BA assemblies (the verified deck's
+c    6/12/15/16/20-rod directional variants are collapsed). RADIAL
+c    simplification only; the axial model is complete.
 c  * Neutron-shield panels and the detailed SS baffle/former plates are
-c    omitted (radial reflector = water + barrel + RPV).
+c    omitted (radial reflector = water + barrel + RPV). RADIAL only.
 c  * Cell densities are POSITIVE atoms/b-cm (= per-material sums); m-card
 c    fractions are POSITIVE atom densities, so MCNP reproduces the exact
 c    verified number densities.
+c  * Lattices are indexed fill=-8:8 -8:8 0:0 so the 17x17 pin and core
+c    arrays are CENTERED on the origin (lattice element [0,0] = origin),
+c    matching the centered SCONE/Serpent/OpenMC core frame, ksrc and the
+c    fmesh window. Do NOT change to 0:16 (that shifts the core off-center).
 c =====================================================================
+c ============== 2D RADIAL PIN UNIVERSES ==============
 c ----- Fuel pins: u=1 (1.6%), u=2 (2.4%), u=3 (3.1%) -----
 1  16 6.89175e-2  -1     u=1 imp:n=1   $ UO2 1.6%
 2  2  2.40440e-4   1 -2   u=1 imp:n=1   $ He gap
@@ -58,120 +81,393 @@ c ----- Guide tube u=4 (CR withdrawn -> water-filled) -----
 c ----- Instrument tube u=5 (air / Zr / water / Zr / water) -----
 16 9  2.52837e-4 -6      u=5 imp:n=1   $ air thimble
 17 4  4.34389e-2   6 -7   u=5 imp:n=1
-18 5  7.41863e-2    7 -8   u=5 imp:n=1
-19 4  4.34389e-2   8 -9   u=5 imp:n=1
-20 5  7.41863e-2    9      u=5 imp:n=1
+18 5  7.41863e-2    7 -4   u=5 imp:n=1
+19 4  4.34389e-2   4 -5   u=5 imp:n=1
+20 5  7.41863e-2    5      u=5 imp:n=1
 c ----- Pyrex burnable-poison pin u=6 (BP above dashpot) -----
-21 9  2.52837e-4 -30     u=6 imp:n=1   $ air
-22 7  8.79322e-2   30 -31 u=6 imp:n=1   $ SS304 inner tube
-23 2  2.40440e-4   31 -32 u=6 imp:n=1   $ He
-24 6  7.15028e-2   32 -33 u=6 imp:n=1   $ borosilicate (pyrex)
-25 2  2.40440e-4   33 -34 u=6 imp:n=1   $ He
-26 7  8.79322e-2   34 -35 u=6 imp:n=1   $ SS304 outer tube
-27 5  7.41863e-2    35 -36 u=6 imp:n=1   $ water
-28 4  4.34389e-2   36 -37 u=6 imp:n=1   $ Zircaloy guide tube
-29 5  7.41863e-2    37    u=6 imp:n=1   $ water
-c ----- Water "assembly" universe u=30 (reflector positions) -----
-40 5  7.41863e-2          u=30 imp:n=1
-c ----- Assembly lattices (u=20 A16, 21 A24, 22 A24B, 23 A31, 24 A31B) -----
-100 0  50 -51 52 -53  lat=1 u=20 imp:n=1
-     fill=0:16 0:16 0:0
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  1  1  4  1  1  4  1  1  4  1  1  1  1  1
-       1  1  1  4  1  1  1  1  1  1  1  1  1  4  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  4  1  1  4  1  1  4  1  1  4  1  1  4  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  4  1  1  4  1  1  5  1  1  4  1  1  4  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  4  1  1  4  1  1  4  1  1  4  1  1  4  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  4  1  1  1  1  1  1  1  1  1  4  1  1  1
-       1  1  1  1  1  4  1  1  4  1  1  4  1  1  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-       1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-101 0  50 -51 52 -53  lat=1 u=21 imp:n=1
-     fill=0:16 0:16 0:0
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  4  2  2  4  2  2  4  2  2  2  2  2
-       2  2  2  4  2  2  2  2  2  2  2  2  2  4  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  4  2  2  4  2  2  4  2  2  4  2  2  4  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  4  2  2  4  2  2  5  2  2  4  2  2  4  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  4  2  2  4  2  2  4  2  2  4  2  2  4  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  4  2  2  2  2  2  2  2  2  2  4  2  2  2
-       2  2  2  2  2  4  2  2  4  2  2  4  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-102 0  50 -51 52 -53  lat=1 u=22 imp:n=1
-     fill=0:16 0:16 0:0
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  6  2  2  6  2  2  6  2  2  2  2  2
-       2  2  2  6  2  2  2  2  2  2  2  2  2  6  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  6  2  2  6  2  2  4  2  2  6  2  2  6  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  6  2  2  4  2  2  5  2  2  4  2  2  6  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  6  2  2  6  2  2  4  2  2  6  2  2  6  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  6  2  2  2  2  2  2  2  2  2  6  2  2  2
-       2  2  2  2  2  6  2  2  6  2  2  6  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-       2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-103 0  50 -51 52 -53  lat=1 u=23 imp:n=1
-     fill=0:16 0:16 0:0
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  4  3  3  4  3  3  4  3  3  3  3  3
-       3  3  3  4  3  3  3  3  3  3  3  3  3  4  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  4  3  3  4  3  3  4  3  3  4  3  3  4  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  4  3  3  4  3  3  5  3  3  4  3  3  4  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  4  3  3  4  3  3  4  3  3  4  3  3  4  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  4  3  3  3  3  3  3  3  3  3  4  3  3  3
-       3  3  3  3  3  4  3  3  4  3  3  4  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-104 0  50 -51 52 -53  lat=1 u=24 imp:n=1
-     fill=0:16 0:16 0:0
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  6  3  3  6  3  3  6  3  3  3  3  3
-       3  3  3  6  3  3  3  3  3  3  3  3  3  6  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  6  3  3  6  3  3  4  3  3  6  3  3  6  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  6  3  3  4  3  3  5  3  3  4  3  3  6  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  6  3  3  6  3  3  4  3  3  6  3  3  6  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  6  3  3  3  3  3  3  3  3  3  6  3  3  3
-       3  3  3  3  3  6  3  3  6  3  3  6  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-       3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3
-c ----- Core lattice u=100 (assembly pitch 21.50364) -----
-200 0  60 -61 62 -63  lat=1 u=100 imp:n=1
-     fill=0:16 0:16 0:0
+21 9  2.52837e-4 -10     u=6 imp:n=1   $ air
+22 7  8.79322e-2   10 -11 u=6 imp:n=1   $ SS304 inner tube
+23 2  2.40440e-4   11 -12 u=6 imp:n=1   $ He
+24 6  7.15028e-2   12 -13 u=6 imp:n=1   $ borosilicate (pyrex)
+25 2  2.40440e-4   13 -6  u=6 imp:n=1   $ He
+26 7  8.79322e-2   6 -7   u=6 imp:n=1   $ SS304 outer tube
+27 5  7.41863e-2    7 -4   u=6 imp:n=1   $ water
+28 4  4.34389e-2   4 -5   u=6 imp:n=1   $ Zircaloy guide tube
+29 5  7.41863e-2    5      u=6 imp:n=1   $ water
+c ----- Dashpot guide tube u=12 (narrowed thimble) -----
+30 5  7.41863e-2   -8      u=12 imp:n=1
+31 4  4.34389e-2   8 -9   u=12 imp:n=1
+32 5  7.41863e-2    9      u=12 imp:n=1
+c ----- Bare instrument thimble u=13 (below lower support plate) -----
+33 9  2.52837e-4 -6      u=13 imp:n=1
+34 4  4.34389e-2   6 -7   u=13 imp:n=1
+35 5  7.41863e-2    7      u=13 imp:n=1
+c ----- BA plenum geometry u=14 -----
+36 9  2.52837e-4 -10     u=14 imp:n=1   $ air
+37 7  8.79322e-2   10 -11 u=14 imp:n=1   $ SS304 inner
+38 2  2.40440e-4   11 -6  u=14 imp:n=1   $ He
+39 7  8.79322e-2   6 -7   u=14 imp:n=1   $ SS304
+40 5  7.41863e-2    7 -8   u=14 imp:n=1   $ water
+41 4  4.34389e-2   8 -9   u=14 imp:n=1   $ Zircaloy
+42 5  7.41863e-2    9      u=14 imp:n=1   $ water
+c ----- SS-filled guide tube u=15 / dashpot u=16 (BA transition) -----
+43 7  8.79322e-2 -4      u=15 imp:n=1
+44 4  4.34389e-2   4 -5   u=15 imp:n=1
+45 5  7.41863e-2    5      u=15 imp:n=1
+46 7  8.79322e-2 -8      u=16 imp:n=1
+47 4  4.34389e-2   8 -9   u=16 imp:n=1
+48 5  7.41863e-2    9      u=16 imp:n=1
+c ----- Structural / plate / end-plug / plenum / water rods -----
+49 7  8.79322e-2 -3      u=7  imp:n=1   $ SS304 rod (nozzle)
+50 5  7.41863e-2    3      u=7  imp:n=1
+51 11 4.03396e-2 -3      u=8  imp:n=1   $ support plate SS rod
+52 5  7.41863e-2    3      u=8  imp:n=1
+53 12 9.82709e-2 -3      u=9  imp:n=1   $ support plate borated water
+54 5  7.41863e-2    3      u=9  imp:n=1
+55 4  4.34389e-2 -3      u=10 imp:n=1   $ Zircaloy end plug
+56 5  7.41863e-2    3      u=10 imp:n=1
+57 10 8.77899e-2 -14     u=11 imp:n=1   $ Inconel spring
+58 2  2.40440e-4   14 -2  u=11 imp:n=1   $ He
+59 4  4.34389e-2   2 -3   u=11 imp:n=1   $ Zircaloy clad
+60 5  7.41863e-2    3      u=11 imp:n=1   $ water
+c ----- Water rod u=30 (reflector / lattice-outer positions) -----
+61 5  7.41863e-2          u=30 imp:n=1
+c ============== GRID-OVERLAY PIN UNIVERSES (Inconel square sleeve) ==============
+c Sleeve: water inside inner sq, Inconel annulus, water in corner.
+c ----- Fuel + grid: u=41 (1.6%), u=42 (2.4%), u=43 (3.1%) -----
+101 16 6.89175e-2 -1                       u=41 imp:n=1
+102 2  2.40440e-4  1 -2                     u=41 imp:n=1
+103 4  4.34389e-2  2 -3                     u=41 imp:n=1
+104 5  7.41863e-2  3 -21 22 -23 24          u=41 imp:n=1
+105 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=41 imp:n=1
+106 5  7.41863e-2  (25:-26:27:-28)          u=41 imp:n=1
+107 24 6.88170e-2 -1                       u=42 imp:n=1
+108 2  2.40440e-4  1 -2                     u=42 imp:n=1
+109 4  4.34389e-2  2 -3                     u=42 imp:n=1
+110 5  7.41863e-2  3 -21 22 -23 24          u=42 imp:n=1
+111 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=42 imp:n=1
+112 5  7.41863e-2  (25:-26:27:-28)          u=42 imp:n=1
+113 31 6.88510e-2 -1                       u=43 imp:n=1
+114 2  2.40440e-4  1 -2                     u=43 imp:n=1
+115 4  4.34389e-2  2 -3                     u=43 imp:n=1
+116 5  7.41863e-2  3 -21 22 -23 24          u=43 imp:n=1
+117 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=43 imp:n=1
+118 5  7.41863e-2  (25:-26:27:-28)          u=43 imp:n=1
+c ----- Guide tube + grid u=44 -----
+119 5  7.41863e-2 -4                        u=44 imp:n=1
+120 4  4.34389e-2  4 -5                     u=44 imp:n=1
+121 5  7.41863e-2  5 -21 22 -23 24          u=44 imp:n=1
+122 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=44 imp:n=1
+123 5  7.41863e-2  (25:-26:27:-28)          u=44 imp:n=1
+c ----- Dashpot guide tube + grid u=48 -----
+124 5  7.41863e-2 -8                        u=48 imp:n=1
+125 4  4.34389e-2  8 -9                     u=48 imp:n=1
+126 5  7.41863e-2  9 -21 22 -23 24          u=48 imp:n=1
+127 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=48 imp:n=1
+128 5  7.41863e-2  (25:-26:27:-28)          u=48 imp:n=1
+c ----- Instrument tube + grid u=45 -----
+129 9  2.52837e-4 -6                        u=45 imp:n=1
+130 4  4.34389e-2  6 -7                     u=45 imp:n=1
+131 5  7.41863e-2  7 -4                     u=45 imp:n=1
+132 4  4.34389e-2  4 -5                     u=45 imp:n=1
+133 5  7.41863e-2  5 -21 22 -23 24          u=45 imp:n=1
+134 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=45 imp:n=1
+135 5  7.41863e-2  (25:-26:27:-28)          u=45 imp:n=1
+c ----- Pyrex BA + grid u=46 -----
+136 9  2.52837e-4 -10                       u=46 imp:n=1
+137 7  8.79322e-2  10 -11                   u=46 imp:n=1
+138 2  2.40440e-4  11 -12                   u=46 imp:n=1
+139 6  7.15028e-2  12 -13                   u=46 imp:n=1
+140 2  2.40440e-4  13 -6                    u=46 imp:n=1
+141 7  8.79322e-2  6 -7                     u=46 imp:n=1
+142 5  7.41863e-2  7 -4                     u=46 imp:n=1
+143 4  4.34389e-2  4 -5                     u=46 imp:n=1
+144 5  7.41863e-2  5 -21 22 -23 24          u=46 imp:n=1
+145 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=46 imp:n=1
+146 5  7.41863e-2  (25:-26:27:-28)          u=46 imp:n=1
+c ----- BA plenum + grid u=47 -----
+147 9  2.52837e-4 -10                       u=47 imp:n=1
+148 7  8.79322e-2  10 -11                   u=47 imp:n=1
+149 2  2.40440e-4  11 -6                    u=47 imp:n=1
+150 7  8.79322e-2  6 -7                     u=47 imp:n=1
+151 5  7.41863e-2  7 -8                     u=47 imp:n=1
+152 4  4.34389e-2  8 -9                     u=47 imp:n=1
+153 5  7.41863e-2  9 -21 22 -23 24          u=47 imp:n=1
+154 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=47 imp:n=1
+155 5  7.41863e-2  (25:-26:27:-28)          u=47 imp:n=1
+c ----- SS-in-guide-tube + grid u=49 -----
+156 7  8.79322e-2 -4                        u=49 imp:n=1
+157 4  4.34389e-2  4 -5                     u=49 imp:n=1
+158 5  7.41863e-2  5 -21 22 -23 24          u=49 imp:n=1
+159 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=49 imp:n=1
+160 5  7.41863e-2  (25:-26:27:-28)          u=49 imp:n=1
+c ----- SS-in-dashpot + grid u=50 -----
+161 7  8.79322e-2 -8                        u=50 imp:n=1
+162 4  4.34389e-2  8 -9                     u=50 imp:n=1
+163 5  7.41863e-2  9 -21 22 -23 24          u=50 imp:n=1
+164 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=50 imp:n=1
+165 5  7.41863e-2  (25:-26:27:-28)          u=50 imp:n=1
+c ----- Plenum + grid u=51 -----
+166 10 8.77899e-2 -14                       u=51 imp:n=1
+167 2  2.40440e-4  14 -2                    u=51 imp:n=1
+168 4  4.34389e-2  2 -3                     u=51 imp:n=1
+169 5  7.41863e-2  3 -21 22 -23 24          u=51 imp:n=1
+170 10 8.77899e-2  -25 26 -27 28 (21:-22:23:-24)  u=51 imp:n=1
+171 5  7.41863e-2  (25:-26:27:-28)          u=51 imp:n=1
+c ============== AXIAL STACK (COLUMN) UNIVERSES ==============
+c ----- 1.6% fuel column u=116 -----
+200 0  700 -701 fill=30 u=116 imp:n=1   $ water
+201 0  701 -702 fill=8  u=116 imp:n=1   $ support plate SS
+202 0  702 -703 fill=10 u=116 imp:n=1   $ Zr bottom end plug
+203 0  703 -704 fill=1  u=116 imp:n=1   $ active fuel
+204 0  704 -707 fill=41 u=116 imp:n=1   $ fuel + grid (bottom)
+205 0  707 -709 fill=1  u=116 imp:n=1
+206 0  709 -710 fill=41 u=116 imp:n=1
+207 0  710 -711 fill=1  u=116 imp:n=1
+208 0  711 -712 fill=41 u=116 imp:n=1
+209 0  712 -713 fill=1  u=116 imp:n=1
+210 0  713 -714 fill=41 u=116 imp:n=1
+211 0  714 -715 fill=1  u=116 imp:n=1
+212 0  715 -716 fill=41 u=116 imp:n=1
+213 0  716 -717 fill=1  u=116 imp:n=1
+214 0  717 -718 fill=41 u=116 imp:n=1
+215 0  718 -719 fill=1  u=116 imp:n=1
+216 0  719 -720 fill=41 u=116 imp:n=1
+217 0  720 -722 fill=1  u=116 imp:n=1   $ active fuel (top)
+218 0  722 -723 fill=11 u=116 imp:n=1   $ plenum spring
+219 0  723 -724 fill=51 u=116 imp:n=1   $ plenum + grid
+220 0  724 -725 fill=11 u=116 imp:n=1   $ plenum spring
+221 0  725 -726 fill=10 u=116 imp:n=1   $ Zr top end plug
+222 0  726 -728 fill=30 u=116 imp:n=1   $ water
+223 0  728 -729 fill=7  u=116 imp:n=1   $ SS304 top nozzle
+224 0  729 -730 fill=30 u=116 imp:n=1   $ water
+c ----- 2.4% fuel column u=124 -----
+225 0  700 -701 fill=30 u=124 imp:n=1
+226 0  701 -702 fill=8  u=124 imp:n=1
+227 0  702 -703 fill=10 u=124 imp:n=1
+228 0  703 -704 fill=2  u=124 imp:n=1
+229 0  704 -707 fill=42 u=124 imp:n=1
+230 0  707 -709 fill=2  u=124 imp:n=1
+231 0  709 -710 fill=42 u=124 imp:n=1
+232 0  710 -711 fill=2  u=124 imp:n=1
+233 0  711 -712 fill=42 u=124 imp:n=1
+234 0  712 -713 fill=2  u=124 imp:n=1
+235 0  713 -714 fill=42 u=124 imp:n=1
+236 0  714 -715 fill=2  u=124 imp:n=1
+237 0  715 -716 fill=42 u=124 imp:n=1
+238 0  716 -717 fill=2  u=124 imp:n=1
+239 0  717 -718 fill=42 u=124 imp:n=1
+240 0  718 -719 fill=2  u=124 imp:n=1
+241 0  719 -720 fill=42 u=124 imp:n=1
+242 0  720 -722 fill=2  u=124 imp:n=1
+243 0  722 -723 fill=11 u=124 imp:n=1
+244 0  723 -724 fill=51 u=124 imp:n=1
+245 0  724 -725 fill=11 u=124 imp:n=1
+246 0  725 -726 fill=10 u=124 imp:n=1
+247 0  726 -728 fill=30 u=124 imp:n=1
+248 0  728 -729 fill=7  u=124 imp:n=1
+249 0  729 -730 fill=30 u=124 imp:n=1
+c ----- 3.1% fuel column u=131 -----
+250 0  700 -701 fill=30 u=131 imp:n=1
+251 0  701 -702 fill=8  u=131 imp:n=1
+252 0  702 -703 fill=10 u=131 imp:n=1
+253 0  703 -704 fill=3  u=131 imp:n=1
+254 0  704 -707 fill=43 u=131 imp:n=1
+255 0  707 -709 fill=3  u=131 imp:n=1
+256 0  709 -710 fill=43 u=131 imp:n=1
+257 0  710 -711 fill=3  u=131 imp:n=1
+258 0  711 -712 fill=43 u=131 imp:n=1
+259 0  712 -713 fill=3  u=131 imp:n=1
+260 0  713 -714 fill=43 u=131 imp:n=1
+261 0  714 -715 fill=3  u=131 imp:n=1
+262 0  715 -716 fill=43 u=131 imp:n=1
+263 0  716 -717 fill=3  u=131 imp:n=1
+264 0  717 -718 fill=43 u=131 imp:n=1
+265 0  718 -719 fill=3  u=131 imp:n=1
+266 0  719 -720 fill=43 u=131 imp:n=1
+267 0  720 -722 fill=3  u=131 imp:n=1
+268 0  722 -723 fill=11 u=131 imp:n=1
+269 0  723 -724 fill=51 u=131 imp:n=1
+270 0  724 -725 fill=11 u=131 imp:n=1
+271 0  725 -726 fill=10 u=131 imp:n=1
+272 0  726 -728 fill=30 u=131 imp:n=1
+273 0  728 -729 fill=7  u=131 imp:n=1
+274 0  729 -730 fill=30 u=131 imp:n=1
+c ----- Guide tube column u=140 -----
+275 0  700 -701 fill=30 u=140 imp:n=1   $ water
+276 0  701 -702 fill=9  u=140 imp:n=1   $ support plate BW
+277 0  702 -704 fill=12 u=140 imp:n=1   $ dashpot thimble
+278 0  704 -706 fill=48 u=140 imp:n=1   $ dashpot + grid
+279 0  706 -707 fill=4  u=140 imp:n=1   $ thimble
+280 0  707 -709 fill=12 u=140 imp:n=1   $ dashpot thimble
+281 0  709 -710 fill=44 u=140 imp:n=1   $ thimble + grid
+282 0  710 -711 fill=4  u=140 imp:n=1
+283 0  711 -712 fill=44 u=140 imp:n=1
+284 0  712 -713 fill=4  u=140 imp:n=1
+285 0  713 -714 fill=44 u=140 imp:n=1
+286 0  714 -715 fill=4  u=140 imp:n=1
+287 0  715 -716 fill=44 u=140 imp:n=1
+288 0  716 -717 fill=4  u=140 imp:n=1
+289 0  717 -718 fill=44 u=140 imp:n=1
+290 0  718 -719 fill=4  u=140 imp:n=1
+291 0  719 -720 fill=44 u=140 imp:n=1
+292 0  720 -723 fill=4  u=140 imp:n=1
+293 0  723 -724 fill=44 u=140 imp:n=1
+294 0  724 -728 fill=4  u=140 imp:n=1
+295 0  728 -729 fill=9  u=140 imp:n=1   $ support plate BW
+296 0  729 -730 fill=30 u=140 imp:n=1   $ water
+c ----- Instrument tube column u=150 -----
+297 0  700 -701 fill=13 u=150 imp:n=1   $ bare thimble
+298 0  701 -702 fill=9  u=150 imp:n=1   $ support plate BW
+299 0  702 -704 fill=5  u=150 imp:n=1   $ instrument tube
+300 0  704 -707 fill=45 u=150 imp:n=1   $ tube + grid
+301 0  707 -709 fill=5  u=150 imp:n=1
+302 0  709 -710 fill=45 u=150 imp:n=1
+303 0  710 -711 fill=5  u=150 imp:n=1
+304 0  711 -712 fill=45 u=150 imp:n=1
+305 0  712 -713 fill=5  u=150 imp:n=1
+306 0  713 -714 fill=45 u=150 imp:n=1
+307 0  714 -715 fill=5  u=150 imp:n=1
+308 0  715 -716 fill=45 u=150 imp:n=1
+309 0  716 -717 fill=5  u=150 imp:n=1
+310 0  717 -718 fill=45 u=150 imp:n=1
+311 0  718 -719 fill=5  u=150 imp:n=1
+312 0  719 -720 fill=45 u=150 imp:n=1
+313 0  720 -723 fill=5  u=150 imp:n=1
+314 0  723 -724 fill=45 u=150 imp:n=1
+315 0  724 -728 fill=5  u=150 imp:n=1
+316 0  728 -730 fill=30 u=150 imp:n=1   $ water
+c ----- Pyrex BA column u=160 -----
+317 0  700 -701 fill=30 u=160 imp:n=1   $ water
+318 0  701 -702 fill=9  u=160 imp:n=1   $ support plate BW
+319 0  702 -704 fill=12 u=160 imp:n=1   $ dashpot thimble
+320 0  704 -705 fill=48 u=160 imp:n=1   $ dashpot + grid
+321 0  705 -706 fill=50 u=160 imp:n=1   $ SS-in-dashpot + grid
+322 0  706 -707 fill=49 u=160 imp:n=1   $ SS-in-guide + grid
+323 0  707 -708 fill=15 u=160 imp:n=1   $ SS-in-guide
+324 0  708 -709 fill=6  u=160 imp:n=1   $ Pyrex poison
+325 0  709 -710 fill=46 u=160 imp:n=1   $ Pyrex + grid
+326 0  710 -711 fill=6  u=160 imp:n=1
+327 0  711 -712 fill=46 u=160 imp:n=1
+328 0  712 -713 fill=6  u=160 imp:n=1
+329 0  713 -714 fill=46 u=160 imp:n=1
+330 0  714 -715 fill=6  u=160 imp:n=1
+331 0  715 -716 fill=46 u=160 imp:n=1
+332 0  716 -717 fill=6  u=160 imp:n=1
+333 0  717 -718 fill=46 u=160 imp:n=1
+334 0  718 -719 fill=6  u=160 imp:n=1
+335 0  719 -720 fill=46 u=160 imp:n=1
+336 0  720 -721 fill=6  u=160 imp:n=1   $ Pyrex poison (top)
+337 0  721 -723 fill=14 u=160 imp:n=1   $ BA plenum
+338 0  723 -724 fill=47 u=160 imp:n=1   $ BA plenum + grid
+339 0  724 -727 fill=14 u=160 imp:n=1   $ BA plenum
+340 0  727 -728 fill=15 u=160 imp:n=1   $ SS-in-guide
+341 0  728 -729 fill=7  u=160 imp:n=1   $ SS304 nozzle
+342 0  729 -730 fill=30 u=160 imp:n=1   $ water
+c ============== ASSEMBLY LATTICES ==============
+c ----- A16 (1.6%) u=20 -----
+400 0  50 -51 52 -53  lat=1 u=20 imp:n=1
+     fill=-8:8 -8:8 0:0
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 116 116 140 116 116 140 116 116 140 116 116 116 116 116
+       116 116 116 140 116 116 116 116 116 116 116 116 116 140 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 140 116 116 140 116 116 140 116 116 140 116 116 140 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 140 116 116 140 116 116 150 116 116 140 116 116 140 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 140 116 116 140 116 116 140 116 116 140 116 116 140 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 140 116 116 116 116 116 116 116 116 116 140 116 116 116
+       116 116 116 116 116 140 116 116 140 116 116 140 116 116 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+       116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116 116
+c ----- A24 (2.4%, no BA) u=21 -----
+401 0  50 -51 52 -53  lat=1 u=21 imp:n=1
+     fill=-8:8 -8:8 0:0
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 140 124 124 140 124 124 140 124 124 124 124 124
+       124 124 124 140 124 124 124 124 124 124 124 124 124 140 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 140 124 124 140 124 124 140 124 124 140 124 124 140 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 140 124 124 140 124 124 150 124 124 140 124 124 140 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 140 124 124 140 124 124 140 124 124 140 124 124 140 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 140 124 124 124 124 124 124 124 124 124 140 124 124 124
+       124 124 124 124 124 140 124 124 140 124 124 140 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+c ----- A24B (2.4% + Pyrex BA) u=22 -----
+402 0  50 -51 52 -53  lat=1 u=22 imp:n=1
+     fill=-8:8 -8:8 0:0
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 160 124 124 160 124 124 160 124 124 124 124 124
+       124 124 124 160 124 124 124 124 124 124 124 124 124 160 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 160 124 124 160 124 124 140 124 124 160 124 124 160 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 160 124 124 140 124 124 150 124 124 140 124 124 160 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 160 124 124 160 124 124 140 124 124 160 124 124 160 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 160 124 124 124 124 124 124 124 124 124 160 124 124 124
+       124 124 124 124 124 160 124 124 160 124 124 160 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+       124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124 124
+c ----- A31 (3.1%, no BA) u=23 -----
+403 0  50 -51 52 -53  lat=1 u=23 imp:n=1
+     fill=-8:8 -8:8 0:0
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 140 131 131 140 131 131 140 131 131 131 131 131
+       131 131 131 140 131 131 131 131 131 131 131 131 131 140 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 140 131 131 140 131 131 140 131 131 140 131 131 140 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 140 131 131 140 131 131 150 131 131 140 131 131 140 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 140 131 131 140 131 131 140 131 131 140 131 131 140 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 140 131 131 131 131 131 131 131 131 131 140 131 131 131
+       131 131 131 131 131 140 131 131 140 131 131 140 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+c ----- A31B (3.1% + Pyrex BA) u=24 -----
+404 0  50 -51 52 -53  lat=1 u=24 imp:n=1
+     fill=-8:8 -8:8 0:0
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 160 131 131 160 131 131 160 131 131 131 131 131
+       131 131 131 160 131 131 131 131 131 131 131 131 131 160 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 160 131 131 160 131 131 140 131 131 160 131 131 160 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 160 131 131 140 131 131 150 131 131 140 131 131 160 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 160 131 131 160 131 131 140 131 131 160 131 131 160 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 160 131 131 131 131 131 131 131 131 131 160 131 131 131
+       131 131 131 131 131 160 131 131 160 131 131 160 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+       131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131 131
+c ============== CORE LATTICE u=100 (assembly pitch 21.50364) ==============
+410 0  60 -61 62 -63  lat=1 u=100 imp:n=1
+     fill=-8:8 -8:8 0:0
       30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30
       30 30 30 30 30 23 24 23 24 23 24 23 30 30 30 30 30
       30 30 30 23 23 24 20 24 20 24 20 24 23 23 30 30 30
@@ -189,34 +485,39 @@ c ----- Core lattice u=100 (assembly pitch 21.50364) -----
       30 30 30 23 23 24 20 24 20 24 20 24 23 23 30 30 30
       30 30 30 30 30 23 24 23 24 23 24 23 30 30 30 30 30
       30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30
-c ----- Core container, reflectors, barrel, RPV, graveyard -----
-300 0          -80 70 -71  fill=100 imp:n=1   $ active core (lattice)
-301 5 7.41863e-2   -80 72 -70             imp:n=1   $ bottom water reflector
-302 5 7.41863e-2   -80 71 -73             imp:n=1   $ top water reflector
-303 7 8.79322e-2   80 -81 72 -73         imp:n=1   $ core barrel (SS304)
-304 5 7.41863e-2    81 -82 72 -73         imp:n=1   $ downcomer water
-305 7 8.79322e-2   82 -83 72 -73         imp:n=1   $ RPV liner (SS304)
-306 8 8.50964e-2   83 -84 72 -73         imp:n=1   $ RPV (carbon steel)
-307 0          84 : -72 : 73          imp:n=0   $ graveyard
+c ============== CORE CONTAINER, REFLECTORS, BARREL, RPV ==============
+300 0          -80 700 -730  fill=100 imp:n=1   $ core (full-axial lattice)
+303 7 8.79322e-2  80 -81 700 -730       imp:n=1   $ core barrel (SS304)
+304 5 7.41863e-2   81 -82 700 -730       imp:n=1   $ downcomer water
+305 7 8.79322e-2  82 -83 700 -730       imp:n=1   $ RPV liner (SS304)
+306 8 8.50964e-2  83 -84 700 -730       imp:n=1   $ RPV (carbon steel)
+307 0          84 : -700 : 730       imp:n=0   $ graveyard
 
 c ===================== SURFACES =====================
 1  cz 0.39218     $ fuel pellet
 2  cz 0.40005     $ gap
-3  cz 0.45720     $ clad
-4  cz 0.56134     $ guide tube inner
-5  cz 0.60198     $ guide tube outer
-6  cz 0.43688     $ instr air
-7  cz 0.48387     $ instr inner Zr
-8  cz 0.56134     $ instr water
-9  cz 0.60198     $ instr outer Zr
-30 cz 0.21400     $ BP air
-31 cz 0.23051     $ BP SS inner
-32 cz 0.24130     $ BP He
-33 cz 0.42672     $ BP pyrex
-34 cz 0.43688     $ BP He
-35 cz 0.48387     $ BP SS outer
-36 cz 0.56134     $ BP water
-37 cz 0.60198     $ BP Zr guide tube
+3  cz 0.45720     $ clad / structural rod OD
+4  cz 0.56134     $ guide tube inner / it water / ba water
+5  cz 0.60198     $ guide tube outer / it Zr2 / ba Zr
+6  cz 0.43688     $ instr air / ba He2
+7  cz 0.48387     $ instr inner Zr / ba SS2
+8  cz 0.50419     $ dashpot thimble inner
+9  cz 0.54610     $ dashpot thimble outer
+10 cz 0.21400     $ BP air
+11 cz 0.23051     $ BP SS inner
+12 cz 0.24130     $ BP He
+13 cz 0.42672     $ BP pyrex
+14 cz 0.06459     $ plenum spring
+c ----- grid-spacer square sleeve (thick: 0.61015 -> 0.62992) -----
+21 px  0.61015
+22 px -0.61015
+23 py  0.61015
+24 py -0.61015
+25 px  0.62992
+26 px -0.62992
+27 py  0.62992
+28 py -0.62992
+c ----- pin / assembly lattice planes -----
 50 px -0.63       $ pin lattice
 51 px  0.63
 52 py -0.63
@@ -225,10 +526,39 @@ c ===================== SURFACES =====================
 61 px  10.75182
 62 py -10.75182
 63 py  10.75182
-70 pz 0.0         $ active fuel bottom
-71 pz 365.76      $ active fuel top
-72 pz -30.0       $ reflector bottom
-73 pz 395.76      $ reflector top
+c ----- axial planes (cm, ported from SCONE) -----
+700 pz 0.0
+701 pz 20.0
+702 pz 35.0
+703 pz 36.748
+704 pz 37.1621
+705 pz 38.66
+706 pz 39.958
+707 pz 40.52
+708 pz 40.558
+709 pz 98.025
+710 pz 103.74
+711 pz 150.222
+712 pz 155.937
+713 pz 202.419
+714 pz 208.134
+715 pz 254.616
+716 pz 260.331
+717 pz 306.813
+718 pz 312.528
+719 pz 359.01
+720 pz 364.725
+721 pz 401.238
+722 pz 402.508
+723 pz 411.806
+724 pz 415.164
+725 pz 417.164
+726 pz 419.704
+727 pz 421.532
+728 pz 423.049
+729 pz 431.876
+730 pz 460.0
+c ----- radial containment -----
 80 cz 187.96      $ core barrel inner
 81 cz 193.675     $ core barrel outer
 82 cz 219.150     $ RPV liner inner
@@ -238,8 +568,8 @@ c ===================== SURFACES =====================
 c ===================== DATA =====================
 c kcode: neutrons/cycle  k-guess  inactive  total cycles
 kcode 20000 1.0 50 250
-c Initial source: uniform across the active core footprint.
-ksrc 0 0 182.88
+c Initial source: centered on the active fuel column (z 36.748 -> 402.508).
+ksrc 0 0 219.628
 c --- Materials (atom densities atoms/b-cm; ported from verified SCONE deck) ---
 c UO2-16  (atom density sum = 6.89175e-2 atoms/b-cm)
 m16   8016.80c     4.58970e-2
@@ -381,10 +711,54 @@ m9   18036.80c    7.87300e-9
       7015.80c     7.23540e-7
       8016.80c     5.28660e-5
       8017.80c     2.00840e-8
-c --- Tallies: assembly-wise fission via FMESH over the core footprint ---
-fmesh4:n geom=xyz origin=-182.78094 -182.78094 0
+c Inconel-718  (atom density sum = 8.77899e-2 atoms/b-cm)
+m10  24050.80c    7.82390e-4
+      24052.80c    1.50880e-2
+      24053.80c    1.71080e-3
+      24054.80c    4.25860e-4
+      26054.80c    1.47970e-3
+      26056.80c    2.32290e-2
+      26057.80c    5.36450e-4
+      26058.80c    7.13920e-5
+      25055.80c    7.82010e-4
+      28058.80c    2.93200e-2
+      28060.80c    1.12940e-2
+      28061.80c    4.90940e-4
+      28062.80c    1.56530e-3
+      28064.80c    3.98640e-4
+      14028.80c    5.67570e-4
+      14029.80c    2.88200e-5
+      14030.80c    1.89980e-5
+c SupportPlateSS  (atom density sum = 4.03396e-2 atoms/b-cm)
+m11  24050.80c    3.52230e-4
+      24052.80c    6.79240e-3
+      24053.80c    7.70200e-4
+      24054.80c    1.91720e-4
+      26054.80c    1.58820e-3
+      26056.80c    2.49310e-2
+      26057.80c    5.75780e-4
+      26058.80c    7.66250e-5
+      25055.80c    8.07620e-4
+      28058.80c    2.57310e-3
+      28060.80c    9.91170e-4
+      28061.80c    4.30850e-5
+      28062.80c    1.37380e-4
+      28064.80c    3.49850e-5
+      14028.80c    4.37110e-4
+      14029.80c    2.21950e-5
+      14030.80c    1.46310e-5
+c SupportPlateBW (borated water; atom density sum = 9.82709e-2 atoms/b-cm)
+m12  5010.80c     1.05590e-5
+      5011.80c     4.27160e-5
+      1001.80c     6.55120e-2
+      1002.80c     1.02040e-5
+      8016.80c     3.26830e-2
+      8017.80c     1.24160e-5
+mt12  lwtr.20t
+c --- Tallies: assembly-wise fission via FMESH over the active fuel ---
+fmesh4:n geom=xyz origin=-182.78094 -182.78094 36.748
         imesh=182.78094 iints=17
         jmesh=182.78094 jints=17
-        kmesh=365.76 kints=1
+        kmesh=402.508 kints=1
 prdmp j 250 1 2
 print
