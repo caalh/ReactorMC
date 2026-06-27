@@ -8,8 +8,10 @@
 % CONTAINS: 17x17 core lattice (assembly pitch 21.50364 cm), 193 fuel
 % assemblies on the verified BEAVRS loading map; 17x17 assemblies (pin
 % pitch 1.26 cm, fuel 0.39218 / gap 0.40005 / clad 0.45720); enrichment
-% zones 1.6/2.4/3.1 wt% UO2; Pyrex burnable-poison rods; control rods
-% WITHDRAWN (water-filled guide tubes); core barrel / downcomer / RPV.
+% zones 1.6/2.4/3.1 wt% UO2; per-assembly Pyrex burnable-poison clusters
+% (real 6/12/15/16/20-rod patterns from the verified SCONE core); control
+% rods WITHDRAWN (water-filled guide tubes); SS304 baffle/former plates,
+% core barrel, 4 octant neutron-shield pads, downcomer, RPV.
 %
 % FULL AXIAL MODEL (this is the completed axial build; the older
 % single-zone caveat is gone). Each pin type is an axial STACK of cells
@@ -36,9 +38,10 @@
 %    deck's JEF-3.1.1 .06 cards). Set 'set acelib' to a library whose
 %    600 K suffix matches; energies are in MeV. Number densities are
 %    identical to the verified deck.
-%  * Representative 20-rod Pyrex pattern for all BA assemblies (RADIAL
-%    simplification only; the axial model is complete).
-%  * Neutron-shield panels and SS baffle/former plates omitted (RADIAL).
+%  * AXIAL and RADIAL models are both complete: per-assembly Pyrex BA
+%    clusters, the stepped SS304 baffle/former, core barrel, four octant
+%    neutron-shield pads, downcomer and RPV all ported from the verified
+%    SCONE core. No radial simplifications remain.
 %  * S(a,b) (therm lwtr) applied to WATER and borated-water support plate
 %    only, never to UO2/structure.
 %  * Run: sss2 -omp N beavrs_fullcore.sss
@@ -623,121 +626,361 @@ cell cba_24 colba fill pssgt  z421532 -z423049
 cell cba_25 colba fill pss    z423049 -z431876
 cell cba_26 colba fill pw     z431876 -z460
 
+% ===================== BAFFLE / FORMER + NEUTRON SHIELD =====================
+% SS304 baffle plates in the peripheral reflector lattice cells (ported from the
+% verified SCONE core): plate bands at local |x|,|y| in [8.36662, 10.58912] cm
+% follow the stepped 193-assembly outline; water fills the rest of each cell.
+surf bxp  px  8.36662
+surf bxm  px -8.36662
+surf bxP  px  10.58912
+surf bxM  px -10.58912
+surf byp  py  8.36662
+surf bym  py -8.36662
+surf byP  py  10.58912
+surf byM  py -10.58912
+% side baffles
+cell bafl_w1 bafl water -bxp
+cell bafl_p  bafl ss304 bxp -bxP
+cell bafl_w2 bafl water bxP
+cell bafr_w1 bafr water bxm
+cell bafr_p  bafr ss304 bxM -bxm
+cell bafr_w2 bafr water -bxM
+cell baft_w1 baft water bym
+cell baft_p  baft ss304 byM -bym
+cell baft_w2 baft water -byM
+cell bafb_w1 bafb water -byp
+cell bafb_p  bafb ss304 byp -byP
+cell bafb_w2 bafb water byP
+% L-shaped corner baffles (SS = two plate bands; water = complement)
+cell baftl_p1 baftl ss304 bxM -bxm -byP
+cell baftl_p2 baftl ss304 byp -byP bxm
+cell baftl_w  baftl water (-bxM:bxm:byP) (-bxm:-byp:byP)
+cell baftr_p1 baftr ss304 bxp -bxP -byP
+cell baftr_p2 baftr ss304 byp -byP -bxp
+cell baftr_w  baftr water (-bxp:bxP:byP) (bxp:-byp:byP)
+cell bafbl_p1 bafbl ss304 bxM -bxm byM
+cell bafbl_p2 bafbl ss304 byM -bym bxm
+cell bafbl_w  bafbl water (-bxM:bxm:-byM) (-byM:bym:-bxm)
+cell bafbr_p1 bafbr ss304 bxp -bxP byM
+cell bafbr_p2 bafbr ss304 byM -bym -bxp
+cell bafbr_w  bafbr water (-bxp:bxP:-byM) (-byM:bym:bxp)
+% square outer corners (single SS quadrant)
+cell sqtl_p sqtl ss304 -bxm byp
+cell sqtl_w sqtl water (bxm:-byp)
+cell sqtr_p sqtr ss304 bxp byp
+cell sqtr_w sqtr water (-bxp:-byp)
+cell sqbl_p sqbl ss304 -bxm -bym
+cell sqbl_w sqbl water (bxm:bym)
+cell sqbr_p sqbr ss304 bxp -bym
+cell sqbr_w sqbr water (-bxp:bym)
+
 % ===================== ASSEMBLY LATTICES =====================
+% Per-assembly Pyrex BA clusters ported verbatim from the verified SCONE core.
+%% A16: 0 BA
 lat a16 1 0.0 0.0 17 17 1.26
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colgt  colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colgt  colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colit  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colgt  colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colgt  colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colgt  colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16 colf16
-
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colgt    colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colgt    colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colit    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colgt    colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colgt    colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colgt    colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16   colf16
+%% A24: 0 BA
 lat a24 1 0.0 0.0 17 17 1.26
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colgt  colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colgt  colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colit  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colgt  colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colgt  colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colgt  colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-
-lat a24b 1 0.0 0.0 17 17 1.26
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colba  colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colba  colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colgt  colf24 colf24 colba  colf24 colf24 colba  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colba  colf24 colf24 colgt  colf24 colf24 colit  colf24 colf24 colgt  colf24 colf24 colba  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colgt  colf24 colf24 colba  colf24 colf24 colba  colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colba  colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colba  colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colba  colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24 colf24
-
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colgt    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colgt    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colit    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colgt    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colgt    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+%% A31: 0 BA
 lat a31 1 0.0 0.0 17 17 1.26
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colgt  colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colgt  colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colit  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colgt  colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colgt  colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colgt  colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-
-lat a31b 1 0.0 0.0 17 17 1.26
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colba  colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colba  colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colgt  colf31 colf31 colba  colf31 colf31 colba  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colba  colf31 colf31 colgt  colf31 colf31 colit  colf31 colf31 colgt  colf31 colf31 colba  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colgt  colf31 colf31 colba  colf31 colf31 colba  colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colba  colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colba  colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colba  colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
-colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31 colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A24_BA12: 12 BA
+lat a24ba12 1 0.0 0.0 17 17 1.26
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colit    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+%% A24_BA16: 16 BA
+lat a24ba16 1 0.0 0.0 17 17 1.26
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colba    colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colit    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colba    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colgt    colf24   colf24   colba    colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colba    colf24   colf24   colba    colf24   colf24   colba    colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24   colf24
+%% A31_BA16: 16 BA
+lat a31ba16 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA20: 20 BA
+lat a31ba20 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA6T: 6 BA
+lat a31ba6t 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA6B: 6 BA
+lat a31ba6b 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA6L: 6 BA
+lat a31ba6l 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA6R: 6 BA
+lat a31ba6r 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colit    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA15BR: 15 BA
+lat a31b15br 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colit    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA15BL: 15 BA
+lat a31b15bl 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colit    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA15TR: 15 BA
+lat a31b15tr 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colit    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colgt    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+%% A31_BA15TL: 15 BA
+lat a31b15tl 1 0.0 0.0 17 17 1.26
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colgt    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colit    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colgt    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colgt    colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colba    colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
+colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31   colf31
 
 % ===================== CORE LATTICE =====================
 lat core 1 0.0 0.0 17 17 21.50364
-pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw
-pw    pw    pw    pw    pw    a31   a31b  a31   a31b  a31   a31b  a31   pw    pw    pw    pw    pw
-pw    pw    pw    a31   a31   a31b  a16   a31b  a16   a31b  a16   a31b  a31   a31   pw    pw    pw
-pw    pw    a31   a31b  a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a31b  a31   pw    pw
-pw    pw    a31   a24b  a24   a24b  a16   a24b  a16   a24b  a16   a24b  a24   a24b  a31   pw    pw
-pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
-pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
-pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
-pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
-pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
-pw    a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  pw
-pw    a31   a31b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a16   a31b  a31   pw
-pw    pw    a31   a24b  a24   a24b  a16   a24b  a16   a24b  a16   a24b  a24   a24b  a31   pw    pw
-pw    pw    a31   a31b  a24b  a16   a24b  a16   a24b  a16   a24b  a16   a24b  a31b  a31   pw    pw
-pw    pw    pw    a31   a31   a31b  a16   a31b  a16   a31b  a16   a31b  a31   a31   pw    pw    pw
-pw    pw    pw    pw    pw    a31   a31b  a31   a31b  a31   a31b  a31   pw    pw    pw    pw    pw
-pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw    pw
+pw       pw       pw       pw       sqbr     baft     baft     baft     baft     baft     baft     baft     sqbl     pw       pw       pw       pw
+pw       pw       sqbr     baft     bafbr    a31      a31ba6b  a31      a31ba6b  a31      a31ba6b  a31      bafbl    baft     sqbl     pw       pw
+pw       sqbr     bafbr    a31      a31      a31ba16  a16      a31ba20  a16      a31ba20  a16      a31ba16  a31      a31      bafbl    sqbl     pw
+pw       bafl     a31      a31b15tl a24ba16  a16      a24ba16  a16      a24ba16  a16      a24ba16  a16      a24ba16  a31b15tr a31      bafr     pw
+sqbr     bafbr    a31      a24ba16  a24      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba16  a24      a24ba16  a31      bafbl    sqbl
+bafl     a31      a31ba16  a16      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba16  a16      a31ba16  a31      bafr
+bafl     a31ba6r  a16      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba16  a16      a31ba6l  bafr
+bafl     a31      a31ba20  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a31ba20  a31      bafr
+bafl     a31ba6r  a16      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba16  a16      a31ba6l  bafr
+bafl     a31      a31ba20  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a31ba20  a31      bafr
+bafl     a31ba6r  a16      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba16  a16      a31ba6l  bafr
+bafl     a31      a31ba16  a16      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba12  a16      a24ba16  a16      a31ba16  a31      bafr
+sqtr     baftr    a31      a24ba16  a24      a24ba16  a16      a24ba12  a16      a24ba12  a16      a24ba16  a24      a24ba16  a31      baftl    sqtl
+pw       bafl     a31      a31b15bl a24ba16  a16      a24ba16  a16      a24ba16  a16      a24ba16  a16      a24ba16  a31b15br a31      bafr     pw
+pw       sqtr     baftr    a31      a31      a31ba16  a16      a31ba20  a16      a31ba20  a16      a31ba16  a31      a31      baftl    sqtl     pw
+pw       pw       sqtr     bafb     baftr    a31      a31ba6t  a31      a31ba6t  a31      a31ba6t  a31      baftl    bafb     sqtl     pw       pw
+pw       pw       pw       pw       sqtr     bafb     bafb     bafb     bafb     bafb     bafb     bafb     sqtl     pw       pw       pw       pw
 
 % ===================== GEOMETRY CELLS =====================
 surf sCB1  cyl 0.0 0.0 187.96     % core barrel inner
@@ -746,9 +989,22 @@ surf sLin  cyl 0.0 0.0 219.150    % RPV liner inner
 surf sRPVi cyl 0.0 0.0 219.710    % RPV inner
 surf sRPVo cyl 0.0 0.0 241.3      % RPV outer
 
+surf sNSi  cyl 0.0 0.0 194.84     % neutron-shield inner
+surf sNSo  cyl 0.0 0.0 201.630    % neutron-shield outer
+surf nsp1  plane -0.48480962025  0.87461970714 0.0 0.0
+surf nsp2  plane -0.87461970714  0.48480962025 0.0 0.0
+surf nsp3  plane -0.87461970714 -0.48480962025 0.0 0.0
+surf nsp4  plane -0.48480962025 -0.87461970714 0.0 0.0
 cell cCore   0 fill core    -sCB1 z0 -z460
 cell cBarrel 0 ss304         sCB1 -sCB2 z0 -z460
-cell cDown   0 water         sCB2 -sLin z0 -z460
+cell cWtNS   0 water         sCB2 -sNSi z0 -z460
+% neutron-shield panels: 4 SS304 pads at the octant positions
+cell cNS1    0 ss304  sNSi -sNSo -nsp1  nsp2 z0 -z460
+cell cNS2    0 ss304  sNSi -sNSo  nsp1 -nsp2 z0 -z460
+cell cNS3    0 ss304  sNSi -sNSo -nsp3  nsp4 z0 -z460
+cell cNS4    0 ss304  sNSi -sNSo  nsp3 -nsp4 z0 -z460
+cell cNSw    0 water  sNSi -sNSo z0 -z460 (nsp1:-nsp2) (-nsp1:nsp2) (nsp3:-nsp4) (-nsp3:nsp4)
+cell cDown   0 water         sNSo -sLin z0 -z460
 cell cLiner  0 ss304         sLin -sRPVi z0 -z460
 cell cRPV    0 carbonsteel   sRPVi -sRPVo z0 -z460
 cell cOut    0 outside       sRPVo
