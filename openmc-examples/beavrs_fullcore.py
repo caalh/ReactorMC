@@ -15,9 +15,11 @@ WHAT THIS BUILDS
   verified BEAVRS loading map (3 enrichment zones).
 - 17x17 assemblies (pin pitch 1.26 cm; fuel 0.39218 / gap 0.40005 /
   clad 0.45720 cm) with 24 guide tubes + 1 central instrument tube.
-- Enrichment zones 1.6 / 2.4 / 3.1 wt% UO2; Pyrex burnable-poison rods;
-  control rods WITHDRAWN (water-filled guide tubes); core barrel /
-  downcomer / RPV liner / RPV; vacuum boundaries.
+- Enrichment zones 1.6 / 2.4 / 3.1 wt% UO2; per-assembly Pyrex burnable-
+  poison clusters (real 6/12/15/16/20-rod patterns from the verified SCONE
+  core); control rods WITHDRAWN (water-filled guide tubes); SS304
+  baffle/former plates, core barrel, 4 octant neutron-shield pads,
+  downcomer, RPV liner / RPV; vacuum boundary.
 - FULL AXIAL MODEL (this is the completed axial build; the older single-zone
   caveat is gone). Each pin type is an axial STACK of cells along z, ported
   layer-for-layer from the verified SCONE deck (z 0 -> 460 cm):
@@ -44,11 +46,10 @@ ASSUMPTIONS / SIMPLIFICATIONS (FLAGGED)
   identical to the verified SCONE deck (which used JEF-3.1.1 at 600 K);
   pick a 600 K-capable library or rely on windowed multipole / on-the-fly
   Doppler. Expect a cross-library k-eff bias vs the SCONE/JEFF result.
-* Representative 20-rod Pyrex pattern for all BA assemblies (the verified
-  deck's 6/12/15/16/20-rod directional variants are collapsed). This is a
-  RADIAL simplification only; the axial model is complete.
-* Neutron-shield panels and SS baffle/former plates omitted (radial
-  reflector = water + barrel + RPV). RADIAL simplification only.
+* AXIAL and RADIAL models are both complete: per-assembly Pyrex BA clusters,
+  the stepped SS304 baffle/former, core barrel, the four octant neutron-
+  shield pads, downcomer and RPV are all ported from the verified SCONE
+  core. No radial simplifications remain.
 * Temperature (600 K) is set on CELLS (per OpenMC convention) and as the
   Settings default; S(a,b) c_H_in_H2O is on WATER ONLY (incl. borated-water
   support plate), never on UO2/structure.
@@ -434,50 +435,297 @@ COL = {k: column(f"col_{k}", t) for k, t in STACKS.items()}
 u_water = openmc.Universe(name="water_col", cells=[openmc.Cell(fill=water, region=+ZP[Z_BOT] & -ZP[Z_TOP])])
 
 # ===================== ASSEMBLY LATTICES =====================
-# Each lattice element is now a full-height AXIAL COLUMN universe.
-# Templates: '.' fuel, 'G' guide tube, 'B' Pyrex BA rod, 'I' instrument tube.
-# GUIDE = standard Westinghouse 17x17 (24 guide tubes + central instrument).
-# BA    = representative 20-rod Pyrex pattern: the 4 guide tubes nearest the
-#         instrument stay empty (G), the other 20 become Pyrex (B). Radial
-#         pattern is IDENTICAL to the prior deck (a RADIAL simplification only).
-GUIDE_TEMPLATE = [
-    ".................",
-    ".................",
-    ".....G..G..G.....",
-    "...G.........G...",
-    ".................",
-    "..G..G..G..G..G..",
-    ".................",
-    ".................",
-    "..G..G..I..G..G..",
-    ".................",
-    ".................",
-    "..G..G..G..G..G..",
-    ".................",
-    "...G.........G...",
-    ".....G..G..G.....",
-    ".................",
-    ".................",
-]
-BA_TEMPLATE = [
-    ".................",
-    ".................",
-    ".....B..B..B.....",
-    "...B.........B...",
-    ".................",
-    "..B..B..G..B..B..",
-    ".................",
-    ".................",
-    "..B..G..I..G..B..",
-    ".................",
-    ".................",
-    "..B..B..G..B..B..",
-    ".................",
-    "...B.........B...",
-    ".....B..B..B.....",
-    ".................",
-    ".................",
-]
+# Each lattice element is a full-height AXIAL COLUMN universe.
+# Per-assembly Pyrex BA (burnable-absorber) templates ported verbatim from the
+# verified SCONE core: 6/12/15/16/20-rod Pyrex clusters in their real in-assembly
+# positions. '.'=fuel  'G'=guide tube  'I'=instrument tube  'B'=Pyrex BA rod.
+ASM_TEMPLATES = {
+    "A16": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A24": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A31": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A24_BA12": [
+        ".................",
+        ".................",
+        ".....B..G..B.....",
+        "...B.........B...",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        "...B.........B...",
+        ".....B..G..B.....",
+        ".................",
+        ".................",
+    ],
+    "A24_BA16": [
+        ".................",
+        ".................",
+        ".....B..B..B.....",
+        "...B.........B...",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        ".................",
+        "..B..G..I..G..B..",
+        ".................",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        "...B.........B...",
+        ".....B..B..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA16": [
+        ".................",
+        ".................",
+        ".....B..B..B.....",
+        "...B.........B...",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        ".................",
+        "..B..G..I..G..B..",
+        ".................",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        "...B.........B...",
+        ".....B..B..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA20": [
+        ".................",
+        ".................",
+        ".....B..B..B.....",
+        "...B.........B...",
+        ".................",
+        "..B..B..G..B..B..",
+        ".................",
+        ".................",
+        "..B..G..I..G..B..",
+        ".................",
+        ".................",
+        "..B..B..G..B..B..",
+        ".................",
+        "...B.........B...",
+        ".....B..B..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA6T": [
+        ".................",
+        ".................",
+        ".....B..G..B.....",
+        "...B.........B...",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA6B": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..G..G..G..G..G..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..B..G..G..G..B..",
+        ".................",
+        "...B.........B...",
+        ".....B..G..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA6L": [
+        ".................",
+        ".................",
+        ".....B..G..G.....",
+        "...B.........G...",
+        ".................",
+        "..B..G..G..G..G..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..B..G..G..G..G..",
+        ".................",
+        "...B.........G...",
+        ".....B..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA6R": [
+        ".................",
+        ".................",
+        ".....G..G..B.....",
+        "...G.........B...",
+        ".................",
+        "..G..G..G..G..B..",
+        ".................",
+        ".................",
+        "..G..G..I..G..G..",
+        ".................",
+        ".................",
+        "..G..G..G..G..B..",
+        ".................",
+        "...G.........B...",
+        ".....G..G..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA15BR": [
+        ".................",
+        ".................",
+        ".....B..B..B.....",
+        "...B.........G...",
+        ".................",
+        "..B..B..B..B..G..",
+        ".................",
+        ".................",
+        "..B..B..I..B..G..",
+        ".................",
+        ".................",
+        "..B..B..B..B..G..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA15BL": [
+        ".................",
+        ".................",
+        ".....B..B..B.....",
+        "...G.........B...",
+        ".................",
+        "..G..B..B..B..B..",
+        ".................",
+        ".................",
+        "..G..B..I..B..B..",
+        ".................",
+        ".................",
+        "..G..B..B..B..B..",
+        ".................",
+        "...G.........G...",
+        ".....G..G..G.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA15TR": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..B..B..B..B..G..",
+        ".................",
+        ".................",
+        "..B..B..I..B..G..",
+        ".................",
+        ".................",
+        "..B..B..B..B..G..",
+        ".................",
+        "...B.........G...",
+        ".....B..B..B.....",
+        ".................",
+        ".................",
+    ],
+    "A31_BA15TL": [
+        ".................",
+        ".................",
+        ".....G..G..G.....",
+        "...G.........G...",
+        ".................",
+        "..G..B..B..B..B..",
+        ".................",
+        ".................",
+        "..G..B..I..B..B..",
+        ".................",
+        ".................",
+        "..G..B..B..B..B..",
+        ".................",
+        "...G.........B...",
+        ".....B..B..B.....",
+        ".................",
+        ".................",
+    ],
+}
 
 
 def _assembly(name, fuel_key, template):
@@ -491,11 +739,72 @@ def _assembly(name, fuel_key, template):
     return openmc.Universe(name=name + "_u", cells=[openmc.Cell(fill=lat)])
 
 
-asm_a16_u = _assembly("asm_a16", "f16", GUIDE_TEMPLATE)
-asm_a24_u = _assembly("asm_a24", "f24", GUIDE_TEMPLATE)
-asm_a24b_u = _assembly("asm_a24b", "f24", BA_TEMPLATE)
-asm_a31_u = _assembly("asm_a31", "f31", GUIDE_TEMPLATE)
-asm_a31b_u = _assembly("asm_a31b", "f31", BA_TEMPLATE)
+# ===================== BAFFLE / FORMER UNIVERSES =====================
+# SS304 plate bands (local |x|,|y| in [8.36662, 10.58912] cm) ported from the
+# verified SCONE core; placed in the peripheral core-lattice positions.
+_bxp = openmc.XPlane(8.36662);   _bxm = openmc.XPlane(-8.36662)
+_bxP = openmc.XPlane(10.58912);  _bxM = openmc.XPlane(-10.58912)
+_byp = openmc.YPlane(8.36662);   _bym = openmc.YPlane(-8.36662)
+_byP = openmc.YPlane(10.58912);  _byM = openmc.YPlane(-10.58912)
+
+
+def _baffle(name, ss_region):
+    ss = openmc.Cell(fill=ss304, region=ss_region)
+    wat = openmc.Cell(fill=water, region=~ss_region)
+    ss.temperature = TEMP
+    wat.temperature = TEMP
+    return openmc.Universe(name=name, cells=[ss, wat])
+
+
+BAF = {
+    "baf_l": _baffle("baf_l", +_bxp & -_bxP),
+    "baf_r": _baffle("baf_r", +_bxM & -_bxm),
+    "baf_t": _baffle("baf_t", +_byM & -_bym),
+    "baf_b": _baffle("baf_b", +_byp & -_byP),
+    "baf_tl": _baffle("baf_tl", (+_bxM & -_bxm & -_byP) | (+_byp & -_byP & +_bxm)),
+    "baf_tr": _baffle("baf_tr", (+_bxp & -_bxP & -_byP) | (+_byp & -_byP & -_bxp)),
+    "baf_bl": _baffle("baf_bl", (+_bxM & -_bxm & +_byM) | (+_byM & -_bym & +_bxm)),
+    "baf_br": _baffle("baf_br", (+_bxp & -_bxP & +_byM) | (+_byM & -_bym & -_bxp)),
+    "sq_tl": _baffle("sq_tl", -_bxm & +_byp),
+    "sq_tr": _baffle("sq_tr", +_bxp & +_byp),
+    "sq_bl": _baffle("sq_bl", -_bxm & -_bym),
+    "sq_br": _baffle("sq_br", +_bxp & -_bym),
+}
+
+asm_a16_u = _assembly("asm_a16", "f16", ASM_TEMPLATES["A16"])
+asm_a24_u = _assembly("asm_a24", "f24", ASM_TEMPLATES["A24"])
+asm_a31_u = _assembly("asm_a31", "f31", ASM_TEMPLATES["A31"])
+asm_a24ba12_u = _assembly("asm_a24ba12", "f24", ASM_TEMPLATES["A24_BA12"])
+asm_a24ba16_u = _assembly("asm_a24ba16", "f24", ASM_TEMPLATES["A24_BA16"])
+asm_a31ba16_u = _assembly("asm_a31ba16", "f31", ASM_TEMPLATES["A31_BA16"])
+asm_a31ba20_u = _assembly("asm_a31ba20", "f31", ASM_TEMPLATES["A31_BA20"])
+asm_a31ba6t_u = _assembly("asm_a31ba6t", "f31", ASM_TEMPLATES["A31_BA6T"])
+asm_a31ba6b_u = _assembly("asm_a31ba6b", "f31", ASM_TEMPLATES["A31_BA6B"])
+asm_a31ba6l_u = _assembly("asm_a31ba6l", "f31", ASM_TEMPLATES["A31_BA6L"])
+asm_a31ba6r_u = _assembly("asm_a31ba6r", "f31", ASM_TEMPLATES["A31_BA6R"])
+asm_a31b15br_u = _assembly("asm_a31b15br", "f31", ASM_TEMPLATES["A31_BA15BR"])
+asm_a31b15bl_u = _assembly("asm_a31b15bl", "f31", ASM_TEMPLATES["A31_BA15BL"])
+asm_a31b15tr_u = _assembly("asm_a31b15tr", "f31", ASM_TEMPLATES["A31_BA15TR"])
+asm_a31b15tl_u = _assembly("asm_a31b15tl", "f31", ASM_TEMPLATES["A31_BA15TL"])
+
+# core lattice rows (top-first, matching SCONE)
+ASM_U = {
+    "A16": asm_a16_u,
+    "A24": asm_a24_u,
+    "A31": asm_a31_u,
+    "A24_BA12": asm_a24ba12_u,
+    "A24_BA16": asm_a24ba16_u,
+    "A31_BA16": asm_a31ba16_u,
+    "A31_BA20": asm_a31ba20_u,
+    "A31_BA6T": asm_a31ba6t_u,
+    "A31_BA6B": asm_a31ba6b_u,
+    "A31_BA6L": asm_a31ba6l_u,
+    "A31_BA6R": asm_a31ba6r_u,
+    "A31_BA15BR": asm_a31b15br_u,
+    "A31_BA15BL": asm_a31b15bl_u,
+    "A31_BA15TR": asm_a31b15tr_u,
+    "A31_BA15TL": asm_a31b15tl_u,
+}
 
 # ===================== CORE LATTICE =====================
 core_lat = openmc.RectLattice(name="core")
@@ -504,40 +813,57 @@ core_lat.pitch = (21.50364, 21.50364)
 core_lat.outer = u_water
 W = u_water
 core_lat.universes = [
-    [W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W],
-    [W, W, W, W, W, asm_a31_u, asm_a31b_u, asm_a31_u, asm_a31b_u, asm_a31_u, asm_a31b_u, asm_a31_u, W, W, W, W, W],
-    [W, W, W, asm_a31_u, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a31_u, asm_a31_u, W, W, W],
-    [W, W, asm_a31_u, asm_a31b_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a31b_u, asm_a31_u, W, W],
-    [W, W, asm_a31_u, asm_a24b_u, asm_a24_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a24_u, asm_a24b_u, asm_a31_u, W, W],
-    [W, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, asm_a31_u, W],
-    [W, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, W],
-    [W, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, asm_a31_u, W],
-    [W, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, W],
-    [W, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, asm_a31_u, W],
-    [W, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, W],
-    [W, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a31b_u, asm_a31_u, W],
-    [W, W, asm_a31_u, asm_a24b_u, asm_a24_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a24_u, asm_a24b_u, asm_a31_u, W, W],
-    [W, W, asm_a31_u, asm_a31b_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a16_u, asm_a24b_u, asm_a31b_u, asm_a31_u, W, W],
-    [W, W, W, asm_a31_u, asm_a31_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a16_u, asm_a31b_u, asm_a31_u, asm_a31_u, W, W, W],
-    [W, W, W, W, W, asm_a31_u, asm_a31b_u, asm_a31_u, asm_a31b_u, asm_a31_u, asm_a31b_u, asm_a31_u, W, W, W, W, W],
-    [W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+    [W, W, W, W, BAF["sq_br"], BAF["baf_t"], BAF["baf_t"], BAF["baf_t"], BAF["baf_t"], BAF["baf_t"], BAF["baf_t"], BAF["baf_t"], BAF["sq_bl"], W, W, W, W],
+    [W, W, BAF["sq_br"], BAF["baf_t"], BAF["baf_br"], ASM_U["A31"], ASM_U["A31_BA6B"], ASM_U["A31"], ASM_U["A31_BA6B"], ASM_U["A31"], ASM_U["A31_BA6B"], ASM_U["A31"], BAF["baf_bl"], BAF["baf_t"], BAF["sq_bl"], W, W],
+    [W, BAF["sq_br"], BAF["baf_br"], ASM_U["A31"], ASM_U["A31"], ASM_U["A31_BA16"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A31_BA16"], ASM_U["A31"], ASM_U["A31"], BAF["baf_bl"], BAF["sq_bl"], W],
+    [W, BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA15TL"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A31_BA15TR"], ASM_U["A31"], BAF["baf_r"], W],
+    [BAF["sq_br"], BAF["baf_br"], ASM_U["A31"], ASM_U["A24_BA16"], ASM_U["A24"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A24"], ASM_U["A24_BA16"], ASM_U["A31"], BAF["baf_bl"], BAF["sq_bl"]],
+    [BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A31_BA16"], ASM_U["A31"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31_BA6R"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A31_BA6L"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A31"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31_BA6R"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A31_BA6L"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A31"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31_BA6R"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A31_BA6L"], BAF["baf_r"]],
+    [BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A31_BA16"], ASM_U["A31"], BAF["baf_r"]],
+    [BAF["sq_tr"], BAF["baf_tr"], ASM_U["A31"], ASM_U["A24_BA16"], ASM_U["A24"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA12"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A24"], ASM_U["A24_BA16"], ASM_U["A31"], BAF["baf_tl"], BAF["sq_tl"]],
+    [W, BAF["baf_l"], ASM_U["A31"], ASM_U["A31_BA15BL"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A16"], ASM_U["A24_BA16"], ASM_U["A31_BA15BR"], ASM_U["A31"], BAF["baf_r"], W],
+    [W, BAF["sq_tr"], BAF["baf_tr"], ASM_U["A31"], ASM_U["A31"], ASM_U["A31_BA16"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A31_BA20"], ASM_U["A16"], ASM_U["A31_BA16"], ASM_U["A31"], ASM_U["A31"], BAF["baf_tl"], BAF["sq_tl"], W],
+    [W, W, BAF["sq_tr"], BAF["baf_b"], BAF["baf_tr"], ASM_U["A31"], ASM_U["A31_BA6T"], ASM_U["A31"], ASM_U["A31_BA6T"], ASM_U["A31"], ASM_U["A31_BA6T"], ASM_U["A31"], BAF["baf_tl"], BAF["baf_b"], BAF["sq_tl"], W, W],
+    [W, W, W, W, BAF["sq_tr"], BAF["baf_b"], BAF["baf_b"], BAF["baf_b"], BAF["baf_b"], BAF["baf_b"], BAF["baf_b"], BAF["baf_b"], BAF["sq_tl"], W, W, W, W],
 ]
 
 # ===================== RADIAL / AXIAL CONTAINMENT =====================
 cyl_cb_in = openmc.ZCylinder(r=187.96)
 cyl_cb_out = openmc.ZCylinder(r=193.675)
+cyl_ns_in = openmc.ZCylinder(r=194.84)
+cyl_ns_out = openmc.ZCylinder(r=201.630)
 cyl_lin = openmc.ZCylinder(r=219.150)
 cyl_rpv_in = openmc.ZCylinder(r=219.710)
 cyl_rpv_out = openmc.ZCylinder(r=241.3, boundary_type="vacuum")
+# Neutron-shield panel bounding planes (octant symmetry).
+nsp1 = openmc.Plane(-0.48480962025, 0.87461970714, 0.0, 0.0)
+nsp2 = openmc.Plane(-0.87461970714, 0.48480962025, 0.0, 0.0)
+nsp3 = openmc.Plane(-0.87461970714, -0.48480962025, 0.0, 0.0)
+nsp4 = openmc.Plane(-0.48480962025, -0.87461970714, 0.0, 0.0)
 z_bot = ZP[Z_BOT]   # vacuum
 z_top = ZP[Z_TOP]   # vacuum
 
 core_cell = openmc.Cell(fill=core_lat, region=-cyl_cb_in & +z_bot & -z_top)
 barrel = openmc.Cell(fill=ss304, region=+cyl_cb_in & -cyl_cb_out & +z_bot & -z_top)
-down = openmc.Cell(fill=water, region=+cyl_cb_out & -cyl_lin & +z_bot & -z_top)
+wt_ns = openmc.Cell(fill=water, region=+cyl_cb_out & -cyl_ns_in & +z_bot & -z_top)
+# 4 SS304 neutron-shield pads at the octant positions; water fills the rest.
+_ns_ring = +cyl_ns_in & -cyl_ns_out & +z_bot & -z_top
+_pads = (-nsp1 & +nsp2) | (+nsp1 & -nsp2) | (-nsp3 & +nsp4) | (+nsp3 & -nsp4)
+ns1 = openmc.Cell(fill=ss304, region=_ns_ring & -nsp1 & +nsp2)
+ns2 = openmc.Cell(fill=ss304, region=_ns_ring & +nsp1 & -nsp2)
+ns3 = openmc.Cell(fill=ss304, region=_ns_ring & -nsp3 & +nsp4)
+ns4 = openmc.Cell(fill=ss304, region=_ns_ring & +nsp3 & -nsp4)
+ns_water = openmc.Cell(fill=water, region=_ns_ring & ~_pads)
+down = openmc.Cell(fill=water, region=+cyl_ns_out & -cyl_lin & +z_bot & -z_top)
 liner = openmc.Cell(fill=ss304, region=+cyl_lin & -cyl_rpv_in & +z_bot & -z_top)
 rpv = openmc.Cell(fill=carbonsteel, region=+cyl_rpv_in & -cyl_rpv_out & +z_bot & -z_top)
-root = openmc.Universe(cells=[core_cell, barrel, down, liner, rpv])
+root = openmc.Universe(cells=[core_cell, barrel, wt_ns, ns1, ns2, ns3, ns4,
+                              ns_water, down, liner, rpv])
 geometry = openmc.Geometry(root)
 
 # ===================== SETTINGS + TALLIES =====================
