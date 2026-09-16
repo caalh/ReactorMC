@@ -1,0 +1,11 @@
+---
+description: This repo is a downstream mirror — never edit deck physics here
+alwaysApply: true
+---
+
+# Mirror sync
+
+This repo mirrors decks from `reactor-monte-carlo-guide` (`npm run
+sync:upload-bundle` there). Never hand-edit deck physics here; fix upstream and
+re-sync. When BEAVRS or example decks change upstream, this mirror and its
+README provenance note must be refreshed in the same session.
