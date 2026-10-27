@@ -31,7 +31,7 @@ All 15 decks in `run_all.ps1` were run locally against a SCONE build with `SCONE
 ## Run Command
 
 ```bash
-cd /mnt/c/Users/me/Documents/GitHub/SCONE
+cd /path/to/SCONE
 export SCONE_ACE=IntegrationTestFiles/testLib
 ./build/scone.out /path/to/input
 ```

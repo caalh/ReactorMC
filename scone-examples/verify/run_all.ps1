@@ -1,5 +1,5 @@
 # Run all SCONE verification tests
-# Expects: SCONE at C:\Users\me\Documents\GitHub\SCONE, scone-examples in this repo
+# Expects: SCONE checked out as a sibling of this repo, named SCONE
 $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $PSScriptRoot   # scone-examples
 $repoRoot = Split-Path -Parent $scriptDir       # reactor-monte-carlo-guide

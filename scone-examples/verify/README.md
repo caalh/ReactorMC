@@ -12,7 +12,7 @@ They live under **`scone-examples/verify/`** in the ReactorMC website repository
 
 ## Prerequisites
 
-- SCONE built at `C:\Users\me\Documents\GitHub\SCONE` (or equivalent)
+- SCONE built at a local clone (or equivalent)
 - WSL (for `run_all.ps1`) or native Linux
 
 ## Run All Tests
